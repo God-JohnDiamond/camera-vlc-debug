@@ -5,20 +5,20 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WpfVLC"
              mc:Ignorable="d" 
-             d:DesignHeight="60" d:DesignWidth="800" Loaded="UserControl_Loaded" MouseLeftButtonDown="Window_MouseLeftButtonDown">
+             d:DesignHeight="55" d:DesignWidth="800" Loaded="UserControl_Loaded" MouseLeftButtonDown="Window_MouseLeftButtonDown">
     <Grid>
         <DockPanel Name="Header" DockPanel.Dock="Top">
-            <Border BorderBrush="Gold"  BorderThickness="0,0,0,1" >
-                <DockPanel Background="#46270c">
+            <Border BorderBrush="#FF005DFF"  BorderThickness="0,0,0,1" >
+                <DockPanel Background="#FF056864">
 
                     <DockPanel DockPanel.Dock="Right">
                         <StackPanel Orientation="Horizontal">
 
                         </StackPanel>
-                        <Border BorderBrush="Gold"  BorderThickness="1,0,0,0" >
+                        <Border  BorderThickness="1,0,0,0" >
                             <StackPanel>
                                 <StackPanel Margin="0,0,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <Button Name="btnMin" Content="" Width="55" Height="40" VerticalAlignment="Top" Click="BtnMin_Click">
+                                    <Button Name="btnMin" Content="" Width="55" Height="55" VerticalAlignment="Top" Click="BtnMin_Click">
                                         <Button.Template>
                                             <ControlTemplate>
                                                 <DockPanel Name="dpCon">
@@ -40,7 +40,7 @@
                                             </ControlTemplate>
                                         </Button.Template>
                                     </Button>
-                                    <Button Name="btnMax" Content="○" Width="55" Height="40" VerticalAlignment="Top" Click="BtnMax_Click">
+                                    <Button Name="btnMax" Content="○" Width="55" Height="55" VerticalAlignment="Top" Click="BtnMax_Click">
                                         <Button.Template>
                                             <ControlTemplate>
                                                 <DockPanel Name="dpCon">
@@ -62,7 +62,7 @@
                                             </ControlTemplate>
                                         </Button.Template>
                                     </Button>
-                                    <Button Name="btnClose" Content="X" Width="55" Height="40" VerticalAlignment="Top" Click="BtnClose_Click">
+                                    <Button Name="btnClose" Content="X" Width="55" Height="55" VerticalAlignment="Top" Click="BtnClose_Click">
                                         <Button.Template>
                                             <ControlTemplate>
                                                 <DockPanel Name="dpCon">
@@ -93,7 +93,7 @@
                     <DockPanel>
                         <StackPanel Orientation="Horizontal">
                             <StackPanel Margin="40,20,0,0">
-                                <TextBlock Text="VLC-STREAM" FontSize="16" Foreground="White"></TextBlock>
+                                <TextBlock Text="Camera-Debug" FontSize="16" Foreground="White"/>
                             </StackPanel>
                         </StackPanel>
 

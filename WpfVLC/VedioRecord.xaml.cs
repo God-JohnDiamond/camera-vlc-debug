@@ -22,6 +22,7 @@ using Vlc.DotNet.Core.Interops;
 using Vlc.DotNet.Core.Interops.Signatures;
 using System.Net;
 using System.Net.Sockets;
+using System.Threading;
 using Path = System.IO.Path;
 
 namespace WpfVLC
@@ -30,12 +31,108 @@ namespace WpfVLC
     //vlc.exe test.mp4 -vvv --sout "#duplicate{dst=standard{access=file,mux=avi,dst=e:/test.avi}, dst=rtp{dst=192.168.9.80,name=stream,sdp=rtsp://192.168.9.80:10086/stream}, dst=display}" 
     public partial class VedioRecord : Window
     {
+        private const string serverip = "192.168.88.12";
+        private const int port = 1233;
+        static TcpClient client = null;
+        static NetworkStream stream = null;
+
+        // header  len    cam_id   zoom   focus   ir_cut  reset  status
+        // 0x7d    0x07   0x00     0x00   0x00    0x00    0x00   0x02
+        private Byte[] data = new Byte[] { 0x7d, 0x07, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02};
+
+        private bool FstFlag = false;
         private string filePath; 
-        private string currentDirectory; 
+        private string currentDirectory;
         public VedioRecord()
         {
             InitializeComponent();
+            
         }
+
+        private void Connect(string server, int port)
+        {
+            FstFlag = false;
+            try
+            {
+                client = new TcpClient(server, port);
+                stream = client.GetStream();
+                // if connected set status as ready
+                data[7] = 0x01;
+                //System.Windows.MessageBox.Show("设备连接成功");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e.Message);
+                data[7] = 0x02;
+                //System.Windows.MessageBox.Show("连接失败，确保设备开启及线缆");
+            }
+            if ((client != null) || (stream != null))
+            {
+                if (!FstFlag)
+                {
+                    stream.Write(data, 0, data.Length);
+                    stream.Flush();
+                    FstFlag = true;
+                }
+            }
+
+            new Task(() =>
+            {
+                while (true)
+                {
+                    TcpReceive();
+                    Thread.Sleep(20);
+                }
+            }).Start();
+        }
+        private void TcpSent()
+        {
+            if ((client != null) || (stream != null))
+            {
+                if (!FstFlag)
+                {
+                    stream.Write(data, 0, data.Length);
+                    stream.Flush();
+                    FstFlag = true;
+                }
+                if (FstFlag && (data[7] == 0x03))
+                {
+                    stream = client.GetStream();
+                    stream.Write(data, 0, data.Length);
+                    stream.Flush();
+                    data[7] = 0x01;
+                }
+                // System.Windows.MessageBox.Show("接收成功");
+            }
+        }
+        private void TcpReceive()
+        {
+            if ((client != null) || (stream != null))
+            {
+                if (FstFlag)
+                {
+                    Byte[] rec_data = new Byte[8];
+                    stream.Read(rec_data, 0, rec_data.Length);
+                    if ((rec_data[0] != 0x7d) && (rec_data[1] != 0x07))
+                    {
+                        //System.Windows.MessageBox.Show("传输错误，请重试");
+                        data[7] = 0x02;
+                    }
+                    Console.WriteLine(rec_data[7]);
+                    // 获取状态位
+                    data[7] = rec_data[7];
+                    // reset位归零
+                    data[6] = 0x00;
+                    // ir_cut位归零
+                    data[5] = 0x00;
+                    // focus位归零
+                    data[4] = 0x00;
+                    // zoom位归零
+                    data[3] = 0x00;
+                }
+            }
+        }
+
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {  
             var currentAssembly = Assembly.GetEntryAssembly();
@@ -76,7 +173,7 @@ namespace WpfVLC
             }), DispatcherPriority.Normal);
         }
         */
-       private void Slider1_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
+       /*private void Slider1_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         { 
             var position = (float)(slider1.Value / slider1.Maximum);
             if (position == 1)
@@ -84,7 +181,7 @@ namespace WpfVLC
                 position = 0.99f;
             }
             // this.VlcControl.SourceProvider.MediaPlayer.Position = position;//Position为百分比，要小于1，等于1会停止
-        }
+        }*/
         /*private void Slider2_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
         {
             //Audio.IsMute :静音和非静音
@@ -134,19 +231,36 @@ namespace WpfVLC
         }*/
         private void openrtsp_Click(object sender, RoutedEventArgs e)
         {
+            new Task(() =>
+            {
+                Connect(serverip, port);
+            }).Start();
             string ed = "ts";
             string dest = Path.Combine(currentDirectory, $"record.{ed}");
             var options = new[]
             {
                     ":sout=#duplicate{dst=display,dst=std{access=file,mux="+ed+",dst=" +dest+"}}",
+                    ":live-caching = 2000",//本地缓存毫秒数
                     //":sout=#file{dst=" + destination + "}",
                     //":sout=#duplicate{dst=display,dst=rtp{sdp=rtsp://:5544/cam}}", 想本地端口5544播放rtsp
-                    ":sout-keep"// 持续开启串流输出 (默认关闭) 
+                    ":sout-keep"// 持续开启串流输出 (默认关闭)
+
+                   /* //":mmdevice-volume=0",
+                    //":audiofile-channels=0",
+                    :live-caching = 300",//本地缓存毫秒数  display-audio :sout=#display
+                    ":sout=#transcode{vcodec=h264,fps=25,venc=x264{preset=ultrafast,profile=baseline,tune=zerolatency},scale=1,acodec=mpga,ab=128,channels=2,samplerate=44100},",
+                    ":duplicate{dst=display,dst=std{access=file,mux="+ed+",dst=" +dest+"}}",
+                    ":sout=#duplicate{dst=display,dst=std{access=file,mux="+ed+",dst="+dest+"}}",
+                    //":sout=#display",
+                    ":sout-keep",
+                    ":sout-all",
+                    ":sout-audio",
+                    ":sout-audio-sync",*/
             };
             this.VlcControl.SourceProvider.MediaPlayer.ResetMedia();
             //this.VlcControl.SourceProvider.MediaPlayer.SetMedia(new Uri("rtsp://192.168.88.141:8554/"), options);
             //this.VlcControl.SourceProvider.MediaPlayer.Play(new Uri("rtsp://192.168.88.141:8554/"));
-            this.VlcControl.SourceProvider.MediaPlayer.SetMedia(new Uri("udp://@192.168.88.113:1234"), options);
+            this.VlcControl.SourceProvider.MediaPlayer.SetMedia(new Uri("udp://@192.168.88.88:1234"), options);
             this.VlcControl.SourceProvider.MediaPlayer.Play();
         }
 
@@ -207,6 +321,16 @@ namespace WpfVLC
         }*/
         private void stop_Click(object sender, RoutedEventArgs e)
         {
+            data[7] = 0x02;
+            TcpSent();
+            stream = null;
+            client = null;
+            if (stream != null) stream.Close();
+            if (client != null) client.Close();
+            System.Windows.MessageBox.Show("已断开连接");
+
+            data = new Byte[] { 0x7d, 0x07, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02 };
+
             new Task(() =>
             {
                 //这里要开线程处理，不然会阻塞播放 
@@ -236,12 +360,115 @@ namespace WpfVLC
 
         private void focus_Add(object sender, RoutedEventArgs e)
         {
-
+            int focus = 1;
+            data[4] = (Byte)focus;
+            TcpSent();
         }
 
         private void focus_Dec(object sender, RoutedEventArgs e)
         {
+            int focus = -1;
+            data[4] = (Byte)focus;
+            TcpSent();
+        }
 
+        private void zoom_level_1(object sender, RoutedEventArgs e)
+        {
+            data[3] = 0x01;
+            TcpSent();
+        }
+
+        private void zoom_level_2(object sender, RoutedEventArgs e)
+        {
+            data[3] = 0x02;
+            TcpSent();
+        }
+
+        private void zoom_level_3(object sender, RoutedEventArgs e)
+        {
+            data[3] = 0x03;
+            TcpSent();
+
+        }
+
+        private void zoom_level_4(object sender, RoutedEventArgs e)
+        {
+            data[3] = 0x04;
+            TcpSent();
+        }
+
+        private void zoom_level_5(object sender, RoutedEventArgs e)
+        {
+            data[3] = 0x05;
+            TcpSent();
+        }
+
+        private void zoom_level_6(object sender, RoutedEventArgs e)
+        {
+            data[3] = 0x06;
+            TcpSent();
+        }
+
+        private void zoom_level_7(object sender, RoutedEventArgs e)
+        {
+            data[3] = 0x07;
+            TcpSent();
+        }
+
+        private void zoom_level_8(object sender, RoutedEventArgs e)
+        {
+            data[3] = 0x08;
+            TcpSent();
+        }
+
+        private void cam_select(object sender, RoutedEventArgs e)
+        {
+            if (btn_cam_sel.Content.ToString() == "当前相机1")
+            {
+                // 切换至相机2
+                btn_cam_sel.Content = "当前相机2";
+                data[2] = 0x02;
+            }
+            else
+            {
+                // 切换至相机1
+                btn_cam_sel.Content = "当前相机1";
+                data[2] = 0x01;
+            }
+            TcpSent();
+        }
+
+/*        private void cam_select_2(object sender, RoutedEventArgs e)
+        {
+
+            data[2] = 0x02;
+            TcpSent();
+        }*/
+
+        private void ir_cut(object sender, RoutedEventArgs e)
+        {
+
+            if (btn_ir_cut.Content.ToString() == "ir_cut开")
+            {
+                // 关操作
+                btn_ir_cut.Content = "ir_cut关";
+                data[5] = 0x02;
+            }
+            else
+            {
+                // 开操作
+                btn_ir_cut.Content = "ir_cut开";
+                data[5] = 0x01;
+            }
+
+            TcpSent();
+        }
+
+        private void reset_cam(object sender, RoutedEventArgs e)
+        {
+
+            data[6] = 0x01;
+            TcpSent();
         }
     }
 }

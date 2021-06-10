@@ -9,7 +9,7 @@
         WindowStyle="None" 
         AllowsTransparency="False"  ResizeMode="NoResize"
 	    Background="Transparent"  Loaded="Window_Loaded"
-        Title="WPF_VLC"  Width="1280"  Height="800"  WindowStartupLocation="CenterScreen" Icon="/Image/logo.ico"  >
+        Title="WPF_VLC"  Width="1280"  Height="808"  WindowStartupLocation="CenterScreen" Icon="/Image/logo.ico"  >
     <Window.Resources>
 
         <SolidColorBrush x:Key="SliderThumb.Static.Foreground" Color="#FFE5E5E5"/>
@@ -267,24 +267,37 @@
 
     </Window.Resources>
     <Grid>
-        <Border BorderBrush="Gold" BorderThickness="2" CornerRadius="1" Background="Black">
+        <Border BorderThickness="2" CornerRadius="1" Background="Black">
             <DockPanel Name="dpCon">
-                <local:UCHeader DockPanel.Dock="Top"></local:UCHeader>
+                <local:UCHeader DockPanel.Dock="Top" Height="55"></local:UCHeader>
                 <DockPanel>
                     <DockPanel DockPanel.Dock="Bottom">
-                        <StackPanel Height="50" DockPanel.Dock="Left" Orientation="Horizontal" Margin="10">
+                        <StackPanel Height="50" DockPanel.Dock="Left" Orientation="Horizontal" Margin="10" AutomationProperties.HelpText="ir_cut" Background="Black">
                             <!--<Button Name="btnOpen1" Content="录像文件" Click="open_ClickDuplicate" Width="80" Margin="10,0,0,0"></Button>-->
-                            <Button Name="btnOpenRTSP" Content="开启流" Click="openrtsp_Click" Width="80" Margin="10,0,0,0"></Button>
-                            <Button x:Name="btnStop" Content="停止流" Click="stop_Click" Width="80" Margin="30,0,0,0"/>
-                            
+                            <Button Name="btnOpenRTSP" Content="开启" Click="openrtsp_Click" Width="60" Margin="10,0,0,0"></Button>
+                            <Button x:Name="btnStop" Content="停止" Click="stop_Click" Width="60" Margin="20,0,0,0"/>
+
                             <!--<Button Name="btnOpenCamera" Content="打开摄像头" Click="openCamera_Click" Width="80" Margin="10,0,0,0"></Button>-->
                             <!--<Button Name="btnPause" Content="暂停" Click="pause_Click" Width="50" Margin="10,0,0,0"></Button>-->
-                        
+
                             <!--<Slider Name="slider2" MinWidth="100" DockPanel.Dock="Right" Thumb.DragCompleted="Slider2_DragCompleted" Margin="10" Minimum="0" Maximum="200" Value="100" Style="{DynamicResource SliderStyle1}" VerticalAlignment="Center"/>-->
-                            <Button Content="微调+" Click="focus_Add" Width="80" Margin="30,0,0,0"/>
-                            <Button Content="微调-" Click="focus_Dec" Width="80" Margin="30,0,0,0"/>
+                            <Button Name="btn_cam_sel" Content="当前相机1" Click="cam_select" Width="65" Margin="50,0,0,0"/>
+                            <!-- <Button Content="相机 2" Click="cam_select_2" Width="50" Margin="20,0,0,0"/>-->
+                            <Button Content="level 1" Click="zoom_level_1" Width="50" Margin="50,0,0,0"/>
+                            <Button Content="level 2" Click="zoom_level_2" Width="50" Margin="20,0,0,0"/>
+                            <Button Content="level 3" Click="zoom_level_3" Width="50" Margin="20,0,0,0"/>
+                            <Button Content="level 4" Click="zoom_level_4" Width="50" Margin="20,0,0,0"/>
+                            <Button Content="level 5" Click="zoom_level_5" Width="50" Margin="20,0,0,0"/>
+                            <Button Content="level 6" Click="zoom_level_6" Width="50" Margin="20,0,0,0"/>
+                            <Button Content="level 7" Click="zoom_level_7" Width="50" Margin="20,0,0,0"/>
+                            <Button Content="level 8" Click="zoom_level_8" Width="50" Margin="20,0,0,0"/>
+                            <Button Content="微调+" Click="focus_Add" Width="50" Margin="40,0,0,0"/>
+                            <Button Content="微调-" Click="focus_Dec" Width="50" Margin="20,0,0,0"/>
+                            <Button Name="btn_ir_cut" Content="ir_cut开" Click="ir_cut" Width="50" Margin="40,0,0,0"/>
+                            <!--<CheckBox x:Name="checkbox1" IsChecked="True" Width="50" Height="15" Margin="30,0,0,0" Content="ir_cut"  Checked="ir_cut" Background="White" BorderBrush="#FF938F8F" Foreground="White" OpacityMask="#FFC7C3C3"/>-->
+                            <Button Content="重置" Click="reset_cam" Width="50" Margin="20,0,0,0"/>
                         </StackPanel>
-                            <Slider Name="slider1" Thumb.DragCompleted="Slider1_DragCompleted" Margin="50" Minimum="1" Maximum="8" Value="5" Style="{DynamicResource SliderStyle1}" VerticalAlignment="Center" Width="450" RenderTransformOrigin="1,1"/>
+                        <!--<Slider Name="slider1" Thumb.DragCompleted="Slider1_DragCompleted" Margin="50" Minimum="1" Maximum="8" Value="5" Style="{DynamicResource SliderStyle1}" VerticalAlignment="Center" Width="450" RenderTransformOrigin="1,1" SmallChange="0"/>-->
                     </DockPanel>
                     <vlc:VlcControl x:Name="VlcControl"/>
                     <!--<vlc:VlcControl x:Name="VlcContro2"  Visibility="Collapsed"/>-->
