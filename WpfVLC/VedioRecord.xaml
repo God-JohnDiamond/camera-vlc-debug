@@ -264,6 +264,86 @@
                 </Trigger>
             </Style.Triggers>
         </Style>
+        <Style x:Key="CheckRadioFocusVisual">
+            <Setter Property="Control.Template">
+                <Setter.Value>
+                    <ControlTemplate>
+                        <Rectangle Margin="14,0,0,0" SnapsToDevicePixels="true" Stroke="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}" StrokeThickness="1" StrokeDashArray="1 2"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="SliderCheckBox" TargetType="{x:Type CheckBox}">
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.ControlTextBrushKey}}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type CheckBox}">
+                        <ControlTemplate.Resources>
+                            <Storyboard x:Key="StoryboardIsChecked">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="CheckFlag">
+                                    <EasingDoubleKeyFrame KeyTime="0" Value="0"/>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="14"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                            <Storyboard x:Key="StoryboardIsCheckedOff">
+                                <DoubleAnimationUsingKeyFrames Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[3].(TranslateTransform.X)" Storyboard.TargetName="CheckFlag">
+                                    <EasingDoubleKeyFrame KeyTime="0" Value="14"/>
+                                    <EasingDoubleKeyFrame KeyTime="0:0:0.2" Value="0"/>
+                                </DoubleAnimationUsingKeyFrames>
+                            </Storyboard>
+                        </ControlTemplate.Resources>
+                        <BulletDecorator Background="Transparent" SnapsToDevicePixels="true">
+                            <BulletDecorator.Bullet>
+                                <Border x:Name="ForegroundPanel" BorderThickness="1" Width="35" Height="20" CornerRadius="10">
+                                    <Canvas>
+                                        <Border Background="White" x:Name="CheckFlag" CornerRadius="10" VerticalAlignment="Center" BorderThickness="1" Width="19" Height="18" RenderTransformOrigin="0.5,0.5">
+                                            <Border.RenderTransform>
+                                                <TransformGroup>
+                                                    <ScaleTransform/>
+                                                    <SkewTransform/>
+                                                    <RotateTransform/>
+                                                    <TranslateTransform/>
+                                                </TransformGroup>
+                                            </Border.RenderTransform>
+                                            <Border.Effect>
+                                                <DropShadowEffect ShadowDepth="1" Direction="180" />
+                                            </Border.Effect>
+                                        </Border>
+                                    </Canvas>
+                                </Border>
+                            </BulletDecorator.Bullet>
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="Center"/>
+                        </BulletDecorator>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="HasContent" Value="true">
+                                <Setter Property="FocusVisualStyle" Value="{StaticResource CheckRadioFocusVisual}"/>
+                                <Setter Property="Padding" Value="4,0,0,0"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter Property="Foreground" Value="{DynamicResource {x:Static SystemColors.GrayTextBrushKey}}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <!--<Setter TargetName="ForegroundPanel" Property="Background" Value="{DynamicResource Accent}" />-->
+                                <Setter TargetName="ForegroundPanel" Property="Background" Value="Green" />
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard x:Name="BeginStoryboardCheckedTrue" Storyboard="{StaticResource StoryboardIsChecked}" />
+                                    <RemoveStoryboard BeginStoryboardName="BeginStoryboardCheckedFalse" />
+                                </Trigger.EnterActions>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="False">
+                                <Setter TargetName="ForegroundPanel" Property="Background" Value="Gray" />
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard x:Name="BeginStoryboardCheckedFalse" Storyboard="{StaticResource StoryboardIsCheckedOff}" />
+                                    <RemoveStoryboard BeginStoryboardName="BeginStoryboardCheckedTrue" />
+                                </Trigger.EnterActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
     </Window.Resources>
     <Grid>
@@ -271,35 +351,50 @@
             <DockPanel Name="dpCon">
                 <local:UCHeader DockPanel.Dock="Top" Height="55"></local:UCHeader>
                 <DockPanel>
-                    <DockPanel DockPanel.Dock="Bottom">
-                        <StackPanel Height="50" DockPanel.Dock="Left" Orientation="Horizontal" Margin="10" AutomationProperties.HelpText="ir_cut" Background="Black">
+                    <DockPanel DockPanel.Dock="Bottom" Margin="0,0,0,20">
+                        <StackPanel Height="50" DockPanel.Dock="Left" Orientation="Horizontal" Margin="0,0,0,10" AutomationProperties.HelpText="ir_cut" Background="Black">
                             <!--<Button Name="btnOpen1" Content="录像文件" Click="open_ClickDuplicate" Width="80" Margin="10,0,0,0"></Button>-->
-                            <Button Name="btnOpenRTSP" Content="开启" Click="openrtsp_Click" Width="60" Margin="10,0,0,0"></Button>
+                            <Button Name="btnOpenRTSP" Content="开启" Click="openrtsp_Click" Width="60" Margin="10,0,0,0" Background="White"></Button>
                             <Button x:Name="btnStop" Content="停止" Click="stop_Click" Width="60" Margin="20,0,0,0"/>
 
                             <!--<Button Name="btnOpenCamera" Content="打开摄像头" Click="openCamera_Click" Width="80" Margin="10,0,0,0"></Button>-->
                             <!--<Button Name="btnPause" Content="暂停" Click="pause_Click" Width="50" Margin="10,0,0,0"></Button>-->
 
                             <!--<Slider Name="slider2" MinWidth="100" DockPanel.Dock="Right" Thumb.DragCompleted="Slider2_DragCompleted" Margin="10" Minimum="0" Maximum="200" Value="100" Style="{DynamicResource SliderStyle1}" VerticalAlignment="Center"/>-->
-                            <Button Name="btn_cam_sel" Content="当前相机1" Click="cam_select" Width="65" Margin="50,0,0,0"/>
-                            <!-- <Button Content="相机 2" Click="cam_select_2" Width="50" Margin="20,0,0,0"/>-->
-                            <Button Content="level 1" Click="zoom_level_1" Width="50" Margin="50,0,0,0"/>
+                            <CheckBox Name="Checker1" Margin="40,0,0,0" Width="80" Style="{DynamicResource SliderCheckBox}" Content="相机1" Foreground="Cyan" Click="Camera_Checked" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                            <!--<ComboBox Name="combobox1" Width="130" Height="20" Margin="40,0,0,0" Foreground="Black" SelectionChanged="combobox1_SelectionChanged">
+                                <ComboBoxItem  Name="combobox_sel" IsSelected="True">连接后请选择相机</ComboBoxItem>
+                                <ComboBoxItem Name="combobox_sel_1">相机1</ComboBoxItem>
+                                <ComboBoxItem Name="combobox_sel_2">相机2</ComboBoxItem>
+                            </ComboBox>-->
+                            <!--<Button Name="btn_cam_sel" Content="当前相机1" Click="cam_select" Width="65" Margin="40,0,0,0"/>
+                            <Button Content="level 1" Click="zoom_level_1" Width="50" Margin="40,0,0,0"/>
                             <Button Content="level 2" Click="zoom_level_2" Width="50" Margin="20,0,0,0"/>
                             <Button Content="level 3" Click="zoom_level_3" Width="50" Margin="20,0,0,0"/>
                             <Button Content="level 4" Click="zoom_level_4" Width="50" Margin="20,0,0,0"/>
                             <Button Content="level 5" Click="zoom_level_5" Width="50" Margin="20,0,0,0"/>
                             <Button Content="level 6" Click="zoom_level_6" Width="50" Margin="20,0,0,0"/>
                             <Button Content="level 7" Click="zoom_level_7" Width="50" Margin="20,0,0,0"/>
-                            <Button Content="level 8" Click="zoom_level_8" Width="50" Margin="20,0,0,0"/>
+                            <Button Content="level 8" Click="zoom_level_8" Width="50" Margin="20,0,0,0"/>-->
                             <Button Content="微调+" Click="focus_Add" Width="50" Margin="40,0,0,0"/>
                             <Button Content="微调-" Click="focus_Dec" Width="50" Margin="20,0,0,0"/>
                             <Button Name="btn_ir_cut" Content="ir_cut开" Click="ir_cut" Width="50" Margin="40,0,0,0"/>
                             <!--<CheckBox x:Name="checkbox1" IsChecked="True" Width="50" Height="15" Margin="30,0,0,0" Content="ir_cut"  Checked="ir_cut" Background="White" BorderBrush="#FF938F8F" Foreground="White" OpacityMask="#FFC7C3C3"/>-->
-                            <Button Content="重置" Click="reset_cam" Width="50" Margin="20,0,0,0"/>
+                            <Button Content="重置" Click="reset_cam" Width="50" Margin="20,0,0,0" BorderBrush="#FF858585" Foreground="Black"/>
                         </StackPanel>
-                        <!--<Slider Name="slider1" Thumb.DragCompleted="Slider1_DragCompleted" Margin="50" Minimum="1" Maximum="8" Value="5" Style="{DynamicResource SliderStyle1}" VerticalAlignment="Center" Width="450" RenderTransformOrigin="1,1" SmallChange="0"/>-->
+                            <!--<Slider Name="slider1" Thumb.DragCompleted="Slider1_DragCompleted" Margin="50" Minimum="1" Maximum="8" Value="5" Style="{DynamicResource SliderStyle1}" VerticalAlignment="Center" Width="450" RenderTransformOrigin="1,1" SmallChange="1"/>-->
+                            <TextBlock Margin="30,0,0,0" Grid.Row="3" Grid.Column="0" Text="变焦等级：" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                            <RadioButton Name="level_1" Content="1" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+                            <RadioButton Name="level_2" Content="2" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+                            <RadioButton Name="level_3" Content="3" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+                            <RadioButton Name="level_4" Content="4" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+                            <RadioButton Name="level_5" Content="5" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+                            <RadioButton Name="level_6" Content="6" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+                            <RadioButton Name="level_7" Content="7" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+                            <RadioButton Name="level_8" Content="8" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
                     </DockPanel>
-                    <vlc:VlcControl x:Name="VlcControl"/>
+                        <TextBox Name="status_bar" TextWrapping="Wrap" Text="请点击开启" Margin="0,0,0,-80" Width="200" Height="20" HorizontalAlignment="Center" VerticalAlignment="Bottom" IsReadOnly="True" IsEnabled="False"/>
+                    <vlc:VlcControl x:Name="VlcControl" Margin="-200,0,0,0"/>
                     <!--<vlc:VlcControl x:Name="VlcContro2"  Visibility="Collapsed"/>-->
                 </DockPanel>
             </DockPanel>

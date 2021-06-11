@@ -31,13 +31,15 @@ namespace WpfVLC
     //vlc.exe test.mp4 -vvv --sout "#duplicate{dst=standard{access=file,mux=avi,dst=e:/test.avi}, dst=rtp{dst=192.168.9.80,name=stream,sdp=rtsp://192.168.9.80:10086/stream}, dst=display}" 
     public partial class VedioRecord : Window
     {
-        private const string serverip = "192.168.88.12";
+        private const string serverip = "192.168.88.177";
         private const int port = 1233;
         static TcpClient client = null;
         static NetworkStream stream = null;
+        Thread TcpRecvThread;
+        Thread TcpConnectThread;
 
         // header  len    cam_id   zoom   focus   ir_cut  reset  status
-        // 0x7d    0x07   0x00     0x00   0x00    0x00    0x00   0x02
+        // 0x7d    0x07   0x01     0x00   0x00    0x00    0x00   0x02
         private Byte[] data = new Byte[] { 0x7d, 0x07, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02};
 
         private bool FstFlag = false;
@@ -46,26 +48,42 @@ namespace WpfVLC
         public VedioRecord()
         {
             InitializeComponent();
-            
+            btnStop.IsEnabled = false;
+
         }
 
-        private void Connect(string server, int port)
+        private void Connect()
         {
             FstFlag = false;
+            this.Dispatcher.Invoke(() => {
+                btnOpenRTSP.IsEnabled = false;
+            });
             try
             {
-                client = new TcpClient(server, port);
+                client = new TcpClient(serverip, port);
                 stream = client.GetStream();
                 // if connected set status as ready
                 data[7] = 0x01;
-                //System.Windows.MessageBox.Show("设备连接成功");
+                //通过下面方法才能访问主线程的控件
+                this.Dispatcher.Invoke(() => {
+                    status_bar.Text = "设备已连接";
+                    btnOpenRTSP.IsEnabled = false;
+                    btnStop.IsEnabled = true;
+                });
             }
             catch (Exception e)
             {
                 Console.WriteLine(e.Message);
                 data[7] = 0x02;
-                //System.Windows.MessageBox.Show("连接失败，确保设备开启及线缆");
+                //通过下面方法才能访问主线程的控件
+                this.Dispatcher.Invoke(() => {
+                    btnOpenRTSP.IsEnabled = true;
+                    btnStop.IsEnabled = false;
+                    status_bar.Text = "连接失败，请检查网络配置";
+                });
             }
+            Thread.Sleep(20);
+            
             if ((client != null) || (stream != null))
             {
                 if (!FstFlag)
@@ -75,15 +93,23 @@ namespace WpfVLC
                     FstFlag = true;
                 }
             }
-
-            new Task(() =>
+            // 确保已发送连接信息
+            if(FstFlag)
             {
-                while (true)
-                {
-                    TcpReceive();
-                    Thread.Sleep(20);
-                }
-            }).Start();
+                this.Dispatcher.Invoke(() => {
+                    status_bar.Text = "设备已连接";
+                    btnOpenRTSP.IsEnabled = false;
+                    btnStop.IsEnabled = true;
+                });
+            }
+            else
+            {
+                this.Dispatcher.Invoke(() => {
+                    btnOpenRTSP.IsEnabled = true;
+                    btnStop.IsEnabled = false;
+                    status_bar.Text = "连接失败，请检查网络配置";
+                });
+            }
         }
         private void TcpSent()
         {
@@ -107,29 +133,40 @@ namespace WpfVLC
         }
         private void TcpReceive()
         {
-            if ((client != null) || (stream != null))
+            while (true)
             {
-                if (FstFlag)
+                //Thread.Sleep(20);
+                if ((client != null) || (stream != null))
                 {
-                    Byte[] rec_data = new Byte[8];
-                    stream.Read(rec_data, 0, rec_data.Length);
-                    if ((rec_data[0] != 0x7d) && (rec_data[1] != 0x07))
+                    if (FstFlag)
                     {
-                        //System.Windows.MessageBox.Show("传输错误，请重试");
-                        data[7] = 0x02;
+                        Byte[] rec_data = new Byte[8];
+                        stream.Read(rec_data, 0, rec_data.Length);
+                        if ((rec_data[0] != 0x7d) && (rec_data[1] != 0x07))
+                        {
+                            //System.Windows.MessageBox.Show("传输错误，请重试");
+                            data[7] = 0x02;
+                        }
+                        Console.WriteLine(rec_data[7]);
+                        // 获取状态位
+                        data[7] = rec_data[7];
+                        // reset位归零
+                        data[6] = 0x00;
+                        // ir_cut位归零
+                        data[5] = 0x00;
+                        // focus位归零
+                        data[4] = 0x00;
+                        // zoom位归零
+                        data[3] = 0x00;
+                        if (rec_data[7] == 0x03)
+                        {
+                            this.Dispatcher.Invoke(() => {
+                                status_bar.Text = "已完成操作";
+                            });
+                        }
                     }
-                    Console.WriteLine(rec_data[7]);
-                    // 获取状态位
-                    data[7] = rec_data[7];
-                    // reset位归零
-                    data[6] = 0x00;
-                    // ir_cut位归零
-                    data[5] = 0x00;
-                    // focus位归零
-                    data[4] = 0x00;
-                    // zoom位归零
-                    data[3] = 0x00;
                 }
+                Console.WriteLine("tcp recv func running...\n");
             }
         }
 
@@ -165,82 +202,23 @@ namespace WpfVLC
             Console.WriteLine(e.ToString());
         }
 
-        /*private void MediaPlayer_LengthChanged(object sender, Vlc.DotNet.Core.VlcMediaPlayerLengthChangedEventArgs e)
-        {
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                slider1.Maximum = this.VlcControl.SourceProvider.MediaPlayer.Length;//长度
-            }), DispatcherPriority.Normal);
-        }
-        */
-       /*private void Slider1_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
-        { 
-            var position = (float)(slider1.Value / slider1.Maximum);
-            if (position == 1)
-            {
-                position = 0.99f;
-            }
-            // this.VlcControl.SourceProvider.MediaPlayer.Position = position;//Position为百分比，要小于1，等于1会停止
-        }*/
-        /*private void Slider2_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e)
-        {
-            //Audio.IsMute :静音和非静音
-            //Audio.Volume：音量的百分比，值在0—200之间
-            //Audio.Tracks：音轨信息，值在0 - 65535之间
-            //Audio.Channel：值在1至5整数，指示的音频通道模式使用，值可以是：“1 = 立体声”，“2 = 反向立体声”，“3 = 左”，“4 = 右” “5 = 混音”。 
-            //Audio.ToggleMute() : 方法，切换静音和非静音 
-            this.VlcControl.SourceProvider.MediaPlayer.Audio.Volume = (int)slider2.Value;
-        }
-        */
-        /*private void open_ClickDuplicate(object sender, RoutedEventArgs e)
-        {
-            string ed = "ts";
-            string dest  = Path.Combine(currentDirectory, $"record.{ed}");
-            OpenFileDialog ofd = new OpenFileDialog();
-            ofd.Multiselect = false;
-            ofd.Title = "请选择视频文件";
-            var result = ofd.ShowDialog();
-            if (result == System.Windows.Forms.DialogResult.OK)
-            {
-                filePath = ofd.FileName;
-                try
-                {
-                    btnPause.Content = "暂停";
-                    var options = new[]
-                    {
-                        //":mmdevice-volume=0",
-                        //":audiofile-channels=0",
-                        //":live-caching = 0",//本地缓存毫秒数  display-audio :sout=#display
-                        //":sout=#transcode{vcodec=h264,fps=25,venc=x264{preset=ultrafast,profile=baseline,tune=zerolatency},scale=1,acodec=mpga,ab=128,channels=2,samplerate=44100}:duplicate{dst=display,dst=std{access=file,mux="+ed+",dst=" +dest+"}}",
-                        ":sout=#duplicate{dst=display,dst=std{access=file,mux="+ed+",dst="+dest+"}}",
-                        //":sout=#display",
-                        ":sout-keep",
-                        ":sout-all",
-                        ":sout-audio",
-                        ":sout-audio-sync", 
-                    };
-                    this.VlcControl.SourceProvider.MediaPlayer.ResetMedia();
-                    this.VlcControl.SourceProvider.MediaPlayer.SetMedia(new Uri(filePath), options);
-                    this.VlcControl.SourceProvider.MediaPlayer.Play(); 
-                }
-                catch (Exception ex)
-                {
-
-                }
-            }
-        }*/
         private void openrtsp_Click(object sender, RoutedEventArgs e)
         {
-            new Task(() =>
-            {
-                Connect(serverip, port);
-            }).Start();
+            status_bar.Text = "正在连接，请稍后...";
+
+            TcpConnectThread = new Thread(Connect);
+            TcpConnectThread.Start();
+            
+            TcpRecvThread = new Thread(TcpReceive);
+            TcpRecvThread.Start();
+
             string ed = "ts";
             string dest = Path.Combine(currentDirectory, $"record.{ed}");
             var options = new[]
             {
                     ":sout=#duplicate{dst=display,dst=std{access=file,mux="+ed+",dst=" +dest+"}}",
-                    ":live-caching = 2000",//本地缓存毫秒数
+                    //":live-caching = 200",//本地缓存毫秒数
+                    ":network-caching = 100",
                     //":sout=#file{dst=" + destination + "}",
                     //":sout=#duplicate{dst=display,dst=rtp{sdp=rtsp://:5544/cam}}", 想本地端口5544播放rtsp
                     ":sout-keep"// 持续开启串流输出 (默认关闭)
@@ -264,72 +242,22 @@ namespace WpfVLC
             this.VlcControl.SourceProvider.MediaPlayer.Play();
         }
 
-        //deinterlace {0 (关), -1 (自动), 1 (开)} scale小于1比如0.25
-        /*private void openCamera_Click(object sender, RoutedEventArgs e)
-        {
-            string ed = "ts";
-            string dest  = Path.Combine(currentDirectory, $"record.{ed}");
-            string mrl = @"dshow://  ";
-            string optVideo = @":dshow-vdev=c922 Pro Stream Webcam";
-            string optAudio = @":dshow-adev=麦克风 (C922 Pro Stream Webcam)";
-            string size = ":dshow-size=800";
-        
-            var options = new[]
-            {
-                optVideo,
-                optAudio,
-                ":dshow-chroma=MJPG",//摄像头录像需要设置该参数，如果直接播放摄像头，不需要设置，该参数为将色彩空间（色度）设置为mjpg，默认为yuv2
-                //":dshow-video-input=-1",
-                //":dshow-video-output=-1",
-                //":no-dshow-config",
-                //":no-dshow-tuner",
-                //":dshow-tuner-frequency=0",
-                ":dshow-tuner-country=0",//不设置这个，录像没有声音，原因不明
-                //":dshow-tuner-standard=0",
-                //":dshow-audio-input=-1",
-                //":dshow-audio-output=-1",
-                //":dshow-audio-channels=0",
-                //":dshow-amtuner-mode=1",
-                //":dshow-audio-samplerate=0",
-                //":dshow-audio-bitspersample=0",
-                ":live-caching = 0",//本地缓存毫秒数 
-                size, 
-                ":sout-keep",// 持续开启串流输出 (默认关闭)
-                ":sout-all",
-                ":sout=#transcode{vcodec=h264,fps=25,venc=x264{preset=ultrafast,profile=baseline,tune=zerolatency},scale=1,acodec=mpga,ab=128,channels=2,samplerate=44100}:duplicate{dst=display,dst=std{access=file,mux="+ed+",dst=" +dest+"}}",
-                //":sout=#transcode{vcodec=h264,fps=25,venc=x264{preset=ultrafast,profile=baseline,tune=zerolatency},scale=1,acodec=mpga,ab=128,channels=2,samplerate=44100}:duplicate{dst=display,dst=rtp{dst=127.0.0.1,mux=ts,port=1234}}";  将摄像头以rtp形式传给本地1234端口
-                //":sout=#transcode{vcodec=h264,fps=25,venc=x264{preset=ultrafast,profile=baseline,tune=zerolatency},scale=1,acodec=mpga,ab=128,channels=2,samplerate=44100}:duplicate{dst=display,dst=rtp{sdp=rtsp://:5544/cam}}"//将本地摄像头发送到本地rtsp流，端口5544 
-
-            //":sout=#duplicate{dst=display,dst=std{access=file,mux="+ed+",dst=" +dest+"}}",//可以录像，但是该录像视频太大，建议转码后录像,并且不录制声音  
-        };
-            this.VlcControl.SourceProvider.MediaPlayer.ResetMedia();//不设置，第二次录像将无声音
-            this.VlcControl.SourceProvider.MediaPlayer.Play(mrl, options); 
-        }
-        */
-        /*public void pause_Click(object sender, RoutedEventArgs e)
-        {
-            if (btnPause.Content.ToString() == "播放")
-            {
-                btnPause.Content = "暂停";
-                this.VlcControl.SourceProvider.MediaPlayer.Play();
-            }
-            else
-            {
-                btnPause.Content = "播放";
-                this.VlcControl.SourceProvider.MediaPlayer.Pause();
-            }
-        }*/
         private void stop_Click(object sender, RoutedEventArgs e)
         {
-            data[7] = 0x02;
+            FstFlag = false;
+            data = new Byte[] { 0x7d, 0x07, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02 };
             TcpSent();
+
+            TcpConnectThread.Abort();
+            TcpRecvThread.Abort();
+
             stream = null;
             client = null;
             if (stream != null) stream.Close();
             if (client != null) client.Close();
-            System.Windows.MessageBox.Show("已断开连接");
+            status_bar.Text = "已断开连接";
 
-            data = new Byte[] { 0x7d, 0x07, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02 };
+            // combobox1.SelectedValue = 1;
 
             new Task(() =>
             {
@@ -337,6 +265,8 @@ namespace WpfVLC
                 //Dispatcher.Invoke(() => { this.VlcControl.SourceProvider.MediaPlayer.Stop(); });
                 this.VlcControl.SourceProvider.MediaPlayer.Stop(); 
             }).Start();
+            btnOpenRTSP.IsEnabled = true;
+            btnStop.IsEnabled = false;
         }
         private float lastPlayTime = 0;
         private float lastPlayTimeGlobal = 0;
@@ -362,6 +292,15 @@ namespace WpfVLC
         {
             int focus = 1;
             data[4] = (Byte)focus;
+            if (client != null)
+            {
+                status_bar.Text = "正在执行一次微调+";
+            }
+            else
+            {
+                status_bar.Text = "设备未连接，请先点击开启连接设备";
+                return;
+            }
             TcpSent();
         }
 
@@ -369,81 +308,17 @@ namespace WpfVLC
         {
             int focus = -1;
             data[4] = (Byte)focus;
-            TcpSent();
-        }
-
-        private void zoom_level_1(object sender, RoutedEventArgs e)
-        {
-            data[3] = 0x01;
-            TcpSent();
-        }
-
-        private void zoom_level_2(object sender, RoutedEventArgs e)
-        {
-            data[3] = 0x02;
-            TcpSent();
-        }
-
-        private void zoom_level_3(object sender, RoutedEventArgs e)
-        {
-            data[3] = 0x03;
-            TcpSent();
-
-        }
-
-        private void zoom_level_4(object sender, RoutedEventArgs e)
-        {
-            data[3] = 0x04;
-            TcpSent();
-        }
-
-        private void zoom_level_5(object sender, RoutedEventArgs e)
-        {
-            data[3] = 0x05;
-            TcpSent();
-        }
-
-        private void zoom_level_6(object sender, RoutedEventArgs e)
-        {
-            data[3] = 0x06;
-            TcpSent();
-        }
-
-        private void zoom_level_7(object sender, RoutedEventArgs e)
-        {
-            data[3] = 0x07;
-            TcpSent();
-        }
-
-        private void zoom_level_8(object sender, RoutedEventArgs e)
-        {
-            data[3] = 0x08;
-            TcpSent();
-        }
-
-        private void cam_select(object sender, RoutedEventArgs e)
-        {
-            if (btn_cam_sel.Content.ToString() == "当前相机1")
+            if (client != null)
             {
-                // 切换至相机2
-                btn_cam_sel.Content = "当前相机2";
-                data[2] = 0x02;
+                status_bar.Text = "正在执行一次微调-";
             }
             else
             {
-                // 切换至相机1
-                btn_cam_sel.Content = "当前相机1";
-                data[2] = 0x01;
+                status_bar.Text = "设备未连接，请先点击开启连接设备";
+                return;
             }
             TcpSent();
         }
-
-/*        private void cam_select_2(object sender, RoutedEventArgs e)
-        {
-
-            data[2] = 0x02;
-            TcpSent();
-        }*/
 
         private void ir_cut(object sender, RoutedEventArgs e)
         {
@@ -453,13 +328,34 @@ namespace WpfVLC
                 // 关操作
                 btn_ir_cut.Content = "ir_cut关";
                 data[5] = 0x02;
+
+                if (client != null)
+                {
+                    status_bar.Text = "正在执行关闭ir_cut";
+                }
+                else
+                {
+                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    return;
+                }
             }
             else
             {
                 // 开操作
                 btn_ir_cut.Content = "ir_cut开";
                 data[5] = 0x01;
+
+                if (client != null)
+                {
+                    status_bar.Text = "正在执行开启ir_cut";
+                }
+                else
+                {
+                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    return;
+                }
             }
+
 
             TcpSent();
         }
@@ -468,7 +364,225 @@ namespace WpfVLC
         {
 
             data[6] = 0x01;
+            level_1.IsChecked = false;
+            level_2.IsChecked = false;
+            level_3.IsChecked = false;
+            level_4.IsChecked = false;
+            level_5.IsChecked = false;
+            level_6.IsChecked = false;
+            level_7.IsChecked = false;
+            level_8.IsChecked = false;
+
+            if (client != null)
+            {
+                status_bar.Text = "正在执行重置操作";
+            }
+            else
+            {
+                status_bar.Text = "设备未连接，请先点击开启连接设备";
+                return;
+            }
             TcpSent();
         }
+
+        private void Camera_Checked(object sender, RoutedEventArgs e)
+        {
+            if((bool)Checker1.IsChecked)
+            {
+                data[2] = 0x02;
+                Checker1.Content = "相机2";
+                if (client != null)
+                {
+                    status_bar.Text = "选择相机2";
+                }
+                else
+                {
+                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    return;
+                }
+            }
+            else
+            {
+                data[2] = 0x01;
+                Checker1.Content = "相机1";
+                if (client != null)
+                {
+                    status_bar.Text = "选择相机1";
+                }
+                else
+                {
+                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    return;
+                }
+            }
+            TcpSent();
+        }
+
+/*        private void combobox1_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            string combox_text = Convert.ToString(combobox1.SelectedItem).Replace("System.Windows.Controls.ComboBoxItem: ", "");
+            if(combox_text == "连接后请选择相机")
+            {
+                data[2] = 0x00;
+                if (client != null)
+                {
+                    status_bar.Text = "请选择相机编号";
+                }
+                else
+                {
+                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    return;
+                }
+            }
+            else if (combox_text == "相机1")
+            {
+                data[2] = 0x01;
+                if (client != null)
+                {
+                    status_bar.Text = "选择相机1";
+                }
+                else
+                {
+                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    return;
+                }
+            }
+            else if (combox_text == "相机2")
+            {
+                data[2] = 0x02;
+                if (client != null)
+                {
+                    status_bar.Text = "选择相机2";
+                }
+                else
+                {
+                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    return;
+                }
+            }
+            else
+            {
+                data[2] = 0x00;
+            }
+            TcpSent();
+        }*/
+
+        private void level_n_Checked(object sender, RoutedEventArgs e)
+        {
+            if(level_1.IsChecked == true)
+            {
+                data[3] = 0x01;
+                if (client != null)
+                {
+                    status_bar.Text = "正在变焦至leve 1";
+                }
+                else
+                {
+                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    return;
+                }
+            }
+
+            if (level_2.IsChecked == true)
+            {
+                data[3] = 0x02;
+                if (client != null)
+                {
+                    status_bar.Text = "正在变焦至leve 2";
+                }
+                else
+                {
+                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    return;
+                }
+            }
+
+            if (level_3.IsChecked == true)
+            {
+                data[3] = 0x03;
+                if (client != null)
+                {
+                    status_bar.Text = "正在变焦至leve 3";
+                }
+                else
+                {
+                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    return;
+                }
+            }
+
+            if (level_4.IsChecked == true)
+            {
+                data[3] = 0x04;
+                if (client != null)
+                {
+                    status_bar.Text = "正在变焦至leve 4";
+                }
+                else
+                {
+                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    return;
+                }
+            }
+
+            if (level_5.IsChecked == true)
+            {
+                data[3] = 0x05;
+                if (client != null)
+                {
+                    status_bar.Text = "正在变焦至leve 5";
+                }
+                else
+                {
+                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    return;
+                }
+            }
+
+            if (level_6.IsChecked == true)
+            {
+                data[3] = 0x06;
+                if (client != null)
+                {
+                    status_bar.Text = "正在变焦至leve 6";
+                }
+                else
+                {
+                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    return;
+                }
+            }
+
+            if (level_7.IsChecked == true)
+            {
+                data[3] = 0x07;
+                if (client != null)
+                {
+                    status_bar.Text = "正在变焦至leve 7";
+                }
+                else
+                {
+                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    return;
+                }
+            }
+
+            if (level_8.IsChecked == true)
+            {
+                data[3] = 0x08;
+                if (client != null)
+                {
+                    status_bar.Text = "正在变焦至leve 8";
+                }
+                else
+                {
+                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    return;
+                }
+            }
+            TcpSent();
+        }
+
+        
     }
 }
