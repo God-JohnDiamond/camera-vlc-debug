@@ -335,6 +335,8 @@ namespace WpfVLC
                 }
                 else
                 {
+                    btn_ir_cut.Content = "ir_cut开";
+                    data[5] = 0x01;
                     status_bar.Text = "设备未连接，请先点击开启连接设备";
                     return;
                 }
@@ -351,6 +353,8 @@ namespace WpfVLC
                 }
                 else
                 {
+                    btn_ir_cut.Content = "ir_cut关";
+                    data[5] = 0x02;
                     status_bar.Text = "设备未连接，请先点击开启连接设备";
                     return;
                 }
@@ -368,7 +372,7 @@ namespace WpfVLC
             level_2.IsChecked = false;
             level_3.IsChecked = false;
             level_4.IsChecked = false;
-            level_5.IsChecked = false;
+            level_5.IsChecked = true;
             level_6.IsChecked = false;
             level_7.IsChecked = false;
             level_8.IsChecked = false;

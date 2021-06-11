@@ -9,7 +9,7 @@
     <Grid>
         <DockPanel Name="Header" DockPanel.Dock="Top">
             <Border BorderBrush="#FF005DFF"  BorderThickness="0,0,0,1" >
-                <DockPanel Background="#FF056864">
+                <DockPanel Background="#FF43A9C7">
 
                     <DockPanel DockPanel.Dock="Right">
                         <StackPanel Orientation="Horizontal">
