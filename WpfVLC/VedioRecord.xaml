@@ -409,16 +409,146 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="border" Property="Background" Value="#FF96B7C1"/>
+                                <Setter TargetName="border" Property="Background" Value="#FF444141"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="border" Property="Background" Value="#2a89a4"/>
+                            </Trigger>
+                            <!--按钮失效-->
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#B444"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!--定义按钮样式-->
+        <Style x:Key="BtnInfoStyle1" TargetType="Button">
+            <!--按钮字体颜色-->
+            <Setter Property="Foreground" Value="Black"/>
+            <!--修改模板属性-->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <!--控件模板-->
+                    <ControlTemplate TargetType="Button">
+                        <!--背景色-->
+                        <Border x:Name="back" Opacity="0.8" CornerRadius="3">
+                            <Border.BitmapEffect>
+                                <OuterGlowBitmapEffect Opacity="0.7" GlowSize="0" GlowColor="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(Button.Background).(SolidColorBrush.Color)}" />
+                            </Border.BitmapEffect>
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="0,1.5">
+                                    <GradientBrush.GradientStops>
+                                        <GradientStopCollection>
+                                            <GradientStop Color="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(Button.Background).(SolidColorBrush.Color)}" Offset="0"/>
+                                            <GradientStop Color="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=(Button.Background).(SolidColorBrush.Color)}" Offset="0.4"/>
+                                            <GradientStop Color="#FFF" Offset="1"/>
+                                        </GradientStopCollection>
+                                    </GradientBrush.GradientStops>
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <!--前景色及边框-->
+                            <Border x:Name="fore" BorderThickness="1" CornerRadius="3" BorderBrush="#5555">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                        <GradientBrush.GradientStops>
+                                            <GradientStopCollection>
+                                                <GradientStop Color="#6FFF" Offset="0.5"/>
+                                                <GradientStop Color="#1111" Offset="0.51"/>
+                                            </GradientStopCollection>
+                                        </GradientBrush.GradientStops>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                                <!--按钮内容-->
+                                <ContentPresenter x:Name="content" HorizontalAlignment="Center" VerticalAlignment="Center" Content="{TemplateBinding  Content}">
+                                    <ContentPresenter.BitmapEffect>
+                                        <DropShadowBitmapEffect Color="#000" Direction="-90" ShadowDepth="2" Softness="0.1" Opacity="0.3" />
+                                    </ContentPresenter.BitmapEffect>
+                                </ContentPresenter>
+                            </Border>
+                        </Border>
+                        <!--触发器-->
+                        <ControlTemplate.Triggers>
+                            <!--鼠标移入移出-->
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation To="6" Duration="0:0:0.2" Storyboard.TargetName="back" Storyboard.TargetProperty="(Border.BitmapEffect).(OuterGlowBitmapEffect.GlowSize)" />
+                                            <ColorAnimation To="#AFFF" BeginTime="0:0:0.2" Duration="0:0:0.2" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(LinearGradientBrush.GradientStops)[0].(GradientStop.Color)" />
+                                            <ColorAnimation To="#3FFF" BeginTime="0:0:0.2" Duration="0:0:0.2" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(LinearGradientBrush.GradientStops)[1].(GradientStop.Color)" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Duration="0:0:0.2" Storyboard.TargetName="back" Storyboard.TargetProperty="(Border.BitmapEffect).(OuterGlowBitmapEffect.GlowSize)" />
+                                            <ColorAnimation Duration="0:0:0.2" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(LinearGradientBrush.GradientStops)[0].(GradientStop.Color)" />
+                                            <ColorAnimation Duration="0:0:0.2" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(LinearGradientBrush.GradientStops)[1].(GradientStop.Color)" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                            <!--按钮按下弹起-->
+                            <Trigger Property="IsPressed" Value="True">
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation To="3" Duration="0:0:0.1" Storyboard.TargetName="back" Storyboard.TargetProperty="(Border.BitmapEffect).(OuterGlowBitmapEffect.GlowSize)" />
+                                            <ColorAnimation To="#3AAA" Duration="0:0:0.1" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(LinearGradientBrush.GradientStops)[0].(GradientStop.Color)" />
+                                            <ColorAnimation To="#2111" Duration="0:0:0.1" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(LinearGradientBrush.GradientStops)[1].(GradientStop.Color)" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Duration="0:0:0.1" Storyboard.TargetName="back" Storyboard.TargetProperty="(Border.BitmapEffect).(OuterGlowBitmapEffect.GlowSize)" />
+                                            <ColorAnimation Duration="0:0:0.1" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(LinearGradientBrush.GradientStops)[0].(GradientStop.Color)" />
+                                            <ColorAnimation Duration="0:0:0.1" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(LinearGradientBrush.GradientStops)[1].(GradientStop.Color)" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                            <!--按钮失效-->
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#B444"/>
+                                <Trigger.EnterActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation To="0" Duration="0:0:0.3" Storyboard.TargetName="back" Storyboard.TargetProperty="(Border.BitmapEffect).(OuterGlowBitmapEffect.GlowSize)" />
+                                            <DoubleAnimation To="1" Duration="0:0:0.1" Storyboard.TargetName="content" Storyboard.TargetProperty="(ContentPresenter.BitmapEffect).(DropShadowBitmapEffect.Opacity)" />
+                                            <DoubleAnimation To="-135" Duration="0:0:0.1" Storyboard.TargetName="content" Storyboard.TargetProperty="(ContentPresenter.BitmapEffect).(DropShadowBitmapEffect.Direction)" />
+                                            <ColorAnimation To="#FFF" Duration="0:0:0.3" Storyboard.TargetName="content" Storyboard.TargetProperty="(ContentPresenter.BitmapEffect).(DropShadowBitmapEffect.Color)" />
+                                            <ColorAnimation To="#D555" Duration="0:0:0.3" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)" />
+                                            <ColorAnimation To="#CEEE" Duration="0:0:0.3" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(LinearGradientBrush.GradientStops)[0].(GradientStop.Color)" />
+                                            <ColorAnimation To="#CDDD" Duration="0:0:0.3" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(LinearGradientBrush.GradientStops)[1].(GradientStop.Color)" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.EnterActions>
+                                <Trigger.ExitActions>
+                                    <BeginStoryboard>
+                                        <Storyboard>
+                                            <DoubleAnimation Duration="0:0:0.1" Storyboard.TargetName="back" Storyboard.TargetProperty="(Border.BitmapEffect).(OuterGlowBitmapEffect.GlowSize)" />
+                                            <DoubleAnimation Duration="0:0:0.1" Storyboard.TargetName="content" Storyboard.TargetProperty="(ContentPresenter.BitmapEffect).(DropShadowBitmapEffect.Opacity)" />
+                                            <DoubleAnimation Duration="0:0:0.1" Storyboard.TargetName="content" Storyboard.TargetProperty="(ContentPresenter.BitmapEffect).(DropShadowBitmapEffect.Direction)" />
+                                            <ColorAnimation Duration="0:0:0.1" Storyboard.TargetName="content" Storyboard.TargetProperty="(ContentPresenter.BitmapEffect).(DropShadowBitmapEffect.Color)" />
+                                            <ColorAnimation Duration="0:0:0.1" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)" />
+                                            <ColorAnimation Duration="0:0:0.1" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(LinearGradientBrush.GradientStops)[0].(GradientStop.Color)" />
+                                            <ColorAnimation Duration="0:0:0.1" Storyboard.TargetName="fore" Storyboard.TargetProperty="(Border.Background).(LinearGradientBrush.GradientStops)[1].(GradientStop.Color)" />
+                                        </Storyboard>
+                                    </BeginStoryboard>
+                                </Trigger.ExitActions>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
 
     </Window.Resources>
     <Grid>
@@ -430,13 +560,13 @@
                         <StackPanel Height="50" DockPanel.Dock="Left" Orientation="Horizontal" Margin="0,0,0,10" AutomationProperties.HelpText="ir_cut" Background="Black">
                             <!--<Button Name="btnOpen1" Content="录像文件" Click="open_ClickDuplicate" Width="80" Margin="10,0,0,0"></Button>-->
                             <Button Style="{StaticResource BtnInfoStyle}" Name="btnOpenRTSP" Content="开启" Click="openrtsp_Click" Width="60" Margin="10,0,0,0"></Button>
-                            <Button Style="{StaticResource BtnInfoStyle}" x:Name="btnStop" Content="停止" Click="stop_Click" Width="60" Margin="20,0,0,0"/>
+                            <Button Style="{StaticResource BtnInfoStyle}" Name="btnStop" Content="停止" Click="stop_Click" Width="60" Margin="20,0,0,0"/>
 
                             <!--<Button Name="btnOpenCamera" Content="打开摄像头" Click="openCamera_Click" Width="80" Margin="10,0,0,0"></Button>-->
                             <!--<Button Name="btnPause" Content="暂停" Click="pause_Click" Width="50" Margin="10,0,0,0"></Button>-->
 
                             <!--<Slider Name="slider2" MinWidth="100" DockPanel.Dock="Right" Thumb.DragCompleted="Slider2_DragCompleted" Margin="10" Minimum="0" Maximum="200" Value="100" Style="{DynamicResource SliderStyle1}" VerticalAlignment="Center"/>-->
-                            <CheckBox Name="Checker1" Margin="40,0,0,0" Width="80" Style="{DynamicResource SliderCheckBox}" Content="相机1" Foreground="#FF43A9C7" Click="Camera_Checked" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="Bold" />
+                            <CheckBox Style="{DynamicResource SliderCheckBox}" Name="Checker1" Margin="40,0,0,0" Width="80" IsEnabled="False" Content="相机1" Foreground="#FF43A9C7" Click="Camera_Checked" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontWeight="Bold" />
                             <!--<ComboBox Name="combobox1" Width="130" Height="20" Margin="40,0,0,0" Foreground="Black" SelectionChanged="combobox1_SelectionChanged">
                                 <ComboBoxItem  Name="combobox_sel" IsSelected="True">连接后请选择相机</ComboBoxItem>
                                 <ComboBoxItem Name="combobox_sel_1">相机1</ComboBoxItem>
@@ -451,25 +581,26 @@
                             <Button Content="level 6" Click="zoom_level_6" Width="50" Margin="20,0,0,0"/>
                             <Button Content="level 7" Click="zoom_level_7" Width="50" Margin="20,0,0,0"/>
                             <Button Content="level 8" Click="zoom_level_8" Width="50" Margin="20,0,0,0"/>-->
-                            <Button Style="{StaticResource BtnInfoStyle}" Content="微调+" Click="focus_Add" Width="50" Margin="40,0,0,0"/>
-                            <Button Style="{StaticResource BtnInfoStyle}" Content="微调-" Click="focus_Dec" Width="50" Margin="20,0,0,0"/>
-                            <Button Style="{StaticResource BtnInfoStyle}" Name="btn_ir_cut" Content="ir_cut开" Click="ir_cut" Width="50" Margin="40,0,0,0"/>
+                            <Button  Style="{StaticResource BtnInfoStyle}" Name="btn_focus_add" Content="微调+" Click="focus_Add" Width="50" Margin="40,0,0,0"/>
+                            <Button  Style="{StaticResource BtnInfoStyle}" Name="btn_focus_dec" Content="微调-" Click="focus_Dec" Width="50" Margin="20,0,0,0"/>
+                            <CheckBox  Style="{DynamicResource SliderCheckBox}" Name="btn_ir_cut" Content="ir_cut开" Click="ir_cut" Width="80" Margin="40,0,0,0" Foreground="#FF43A9C7" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
                             <!--<CheckBox x:Name="checkbox1" IsChecked="True" Width="50" Height="15" Margin="30,0,0,0" Content="ir_cut"  Checked="ir_cut" Background="White" BorderBrush="#FF938F8F" Foreground="White" OpacityMask="#FFC7C3C3"/>-->
-                            <Button Style="{StaticResource BtnInfoStyle}" Content="重置" Click="reset_cam" Width="50" Margin="20,0,0,0"/>
+                            <Button Style="{StaticResource BtnInfoStyle}" Name="btn_reset" Content="重置" Click="reset_cam" Width="50" Margin="20,0,0,0"/>
                         </StackPanel>
                             <!--<Slider Name="slider1" Thumb.DragCompleted="Slider1_DragCompleted" Margin="50" Minimum="1" Maximum="8" Value="5" Style="{DynamicResource SliderStyle1}" VerticalAlignment="Center" Width="450" RenderTransformOrigin="1,1" SmallChange="1"/>-->
-                            <TextBlock Margin="30,-10,0,0" Grid.Row="3" Grid.Column="0" Text="变焦等级：" Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
-                            <RadioButton Name="level_1" Content="1" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
-                            <RadioButton Name="level_2" Content="2" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
-                            <RadioButton Name="level_3" Content="3" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
-                            <RadioButton Name="level_4" Content="4" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
-                            <RadioButton Name="level_5" Content="5" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
-                            <RadioButton Name="level_6" Content="6" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
-                            <RadioButton Name="level_7" Content="7" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
-                            <RadioButton Name="level_8" Content="8" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
+                            <TextBlock Margin="30,-10,0,0" Grid.Row="3" Grid.Column="0" Text="变焦等级：" Foreground="White" HorizontalAlignment="Center" Height="28"/>
+                        <RadioButton Name="level_1" Content="1" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <RadioButton Name="level_2" Content="2" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <RadioButton Name="level_3" Content="3" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <RadioButton Name="level_4" Content="4" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <RadioButton Name="level_5" Content="5" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <RadioButton Name="level_6" Content="6" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <RadioButton Name="level_7" Content="7" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                            <RadioButton Name="level_8" Content="8" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" Foreground="White" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                     </DockPanel>
-                        <TextBox Name="status_bar" TextWrapping="Wrap" Text="请点击开启" Margin="0,0,0,-80" Width="200" Height="20" HorizontalAlignment="Center" VerticalAlignment="Bottom" IsReadOnly="True" IsEnabled="False"/>
-                    <vlc:VlcControl x:Name="VlcControl" Margin="-200,0,0,0"/>
+                    <TextBox Name="status_bar" TextWrapping="Wrap" Text="请点击开启" Margin="0,0,0,-80" Width="200" Height="20" HorizontalAlignment="Center" VerticalAlignment="Bottom" IsReadOnly="True" IsEnabled="False"/>
+                    <vlc:VlcControl x:Name="VlcControl" Margin="-200,0,0,0">
+                    </vlc:VlcControl>
                     <!--<vlc:VlcControl x:Name="VlcContro2"  Visibility="Collapsed"/>-->
                 </DockPanel>
             </DockPanel>

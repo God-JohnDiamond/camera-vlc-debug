@@ -48,8 +48,14 @@ namespace WpfVLC
         public VedioRecord()
         {
             InitializeComponent();
+            // 失能按钮
             btnStop.IsEnabled = false;
-
+            btnStop.IsEnabled = false;
+            Checker1.IsEnabled = false;
+            btn_focus_add.IsEnabled = false;
+            btn_focus_dec.IsEnabled = false;
+            btn_ir_cut.IsEnabled = false;
+            btn_reset.IsEnabled = false;
         }
 
         private void Connect()
@@ -98,8 +104,15 @@ namespace WpfVLC
             {
                 this.Dispatcher.Invoke(() => {
                     status_bar.Text = "设备已连接";
+                    // 失能按钮
                     btnOpenRTSP.IsEnabled = false;
+                    // 使能按钮
                     btnStop.IsEnabled = true;
+                    Checker1.IsEnabled = true;
+                    btn_focus_add.IsEnabled = true;
+                    btn_focus_dec.IsEnabled = true;
+                    btn_ir_cut.IsEnabled = true;
+                    btn_reset.IsEnabled = true;
                 });
             }
             else
@@ -110,6 +123,7 @@ namespace WpfVLC
                     status_bar.Text = "连接失败，请检查网络配置";
                 });
             }
+            
         }
         private void TcpSent()
         {
@@ -119,7 +133,6 @@ namespace WpfVLC
                 {
                     stream.Write(data, 0, data.Length);
                     stream.Flush();
-                    FstFlag = true;
                 }
                 if (FstFlag && (data[7] == 0x03))
                 {
@@ -166,7 +179,7 @@ namespace WpfVLC
                         }
                     }
                 }
-                Console.WriteLine("tcp recv func running...\n");
+                // Console.WriteLine("tcp recv func running...\n");
             }
         }
 
@@ -323,7 +336,7 @@ namespace WpfVLC
         private void ir_cut(object sender, RoutedEventArgs e)
         {
 
-            if (btn_ir_cut.Content.ToString() == "ir_cut开")
+            if ((bool)btn_ir_cut.IsChecked)
             {
                 // 关操作
                 btn_ir_cut.Content = "ir_cut关";
@@ -336,6 +349,7 @@ namespace WpfVLC
                 else
                 {
                     btn_ir_cut.Content = "ir_cut开";
+                    btn_ir_cut.IsChecked = false;
                     data[5] = 0x01;
                     status_bar.Text = "设备未连接，请先点击开启连接设备";
                     return;
@@ -354,6 +368,7 @@ namespace WpfVLC
                 else
                 {
                     btn_ir_cut.Content = "ir_cut关";
+                    btn_ir_cut.IsChecked = true;
                     data[5] = 0x02;
                     status_bar.Text = "设备未连接，请先点击开启连接设备";
                     return;
@@ -397,7 +412,7 @@ namespace WpfVLC
                 Checker1.Content = "相机2";
                 if (client != null)
                 {
-                    status_bar.Text = "选择相机2";
+                    status_bar.Text = "正在切换至相机2";
                 }
                 else
                 {
@@ -411,7 +426,7 @@ namespace WpfVLC
                 Checker1.Content = "相机1";
                 if (client != null)
                 {
-                    status_bar.Text = "选择相机1";
+                    status_bar.Text = "正在切换至相机1";
                 }
                 else
                 {
@@ -419,6 +434,11 @@ namespace WpfVLC
                     return;
                 }
             }
+            // 切换相机 zoom focus ir_cut reset 归零
+            data[3] = 0;
+            data[4] = 0;
+            data[5] = 0;
+            data[6] = 0;
             TcpSent();
         }
 
