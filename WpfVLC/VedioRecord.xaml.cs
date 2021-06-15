@@ -220,9 +220,11 @@ namespace WpfVLC
             status_bar.Text = "正在连接，请稍后...";
 
             TcpConnectThread = new Thread(Connect);
+            TcpConnectThread.IsBackground = true;
             TcpConnectThread.Start();
             
             TcpRecvThread = new Thread(TcpReceive);
+            TcpRecvThread.IsBackground = true;
             TcpRecvThread.Start();
 
             string ed = "ts";
