@@ -43,6 +43,7 @@ namespace WpfVLC
         private Byte[] data = new Byte[] { 0x7d, 0x07, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02};
 
         private bool FstFlag = false;
+        private bool ConFlg = false;
         private string filePath; 
         private string currentDirectory;
         public VedioRecord()
@@ -58,72 +59,150 @@ namespace WpfVLC
             btn_reset.IsEnabled = false;
         }
 
+        /*        private void Connect()
+                {
+                    FstFlag = false;
+                    this.Dispatcher.Invoke(() => {
+                        btnOpenRTSP.IsEnabled = false;
+                    });
+                    try
+                    {
+                        client = new TcpClient(serverip, port);
+                        stream = client.GetStream();
+                        // if connected set status as ready
+                        data[7] = 0x01;
+                        //通过下面方法才能访问主线程的控件
+                        this.Dispatcher.Invoke(() => {
+                            status_bar.Text = "设备已连接";
+                            btnOpenRTSP.IsEnabled = false;
+                            btnStop.IsEnabled = true;
+                        });
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
+                        data[7] = 0x02;
+                        //通过下面方法才能访问主线程的控件
+                        this.Dispatcher.Invoke(() => {
+                            btnOpenRTSP.IsEnabled = true;
+                            btnStop.IsEnabled = false;
+                            status_bar.Text = "连接失败，请检查网络配置";
+                        });
+                    }
+                    Thread.Sleep(20);
+
+                    if ((client != null) || (stream != null))
+                    {
+                        if (!FstFlag)
+                        {
+                            stream.Write(data, 0, data.Length);
+                            stream.Flush();
+                            FstFlag = true;
+                        }
+                    }
+                    // 确保已发送连接信息
+                    if(FstFlag)
+                    {
+                        this.Dispatcher.Invoke(() => {
+                            status_bar.Text = "设备已连接";
+                            // 失能按钮
+                            btnOpenRTSP.IsEnabled = false;
+                            // 使能按钮
+                            btnStop.IsEnabled = true;
+                            Checker1.IsEnabled = true;
+                            btn_focus_add.IsEnabled = true;
+                            btn_focus_dec.IsEnabled = true;
+                            btn_ir_cut.IsEnabled = true;
+                            btn_reset.IsEnabled = true;
+                        });
+                    }
+                    else
+                    {
+                        this.Dispatcher.Invoke(() => {
+                            btnOpenRTSP.IsEnabled = true;
+                            btnStop.IsEnabled = false;
+                            status_bar.Text = "连接失败，请检查网络配置";
+                        });
+                    }
+
+                }*/
+
         private void Connect()
         {
-            FstFlag = false;
             this.Dispatcher.Invoke(() => {
+                FstFlag = false;
                 btnOpenRTSP.IsEnabled = false;
             });
-            try
-            {
-                client = new TcpClient(serverip, port);
-                stream = client.GetStream();
-                // if connected set status as ready
-                data[7] = 0x01;
-                //通过下面方法才能访问主线程的控件
-                this.Dispatcher.Invoke(() => {
-                    status_bar.Text = "设备已连接";
-                    btnOpenRTSP.IsEnabled = false;
-                    btnStop.IsEnabled = true;
-                });
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                data[7] = 0x02;
-                //通过下面方法才能访问主线程的控件
-                this.Dispatcher.Invoke(() => {
-                    btnOpenRTSP.IsEnabled = true;
-                    btnStop.IsEnabled = false;
-                    status_bar.Text = "连接失败，请检查网络配置";
-                });
-            }
-            Thread.Sleep(20);
-            
-            if ((client != null) || (stream != null))
-            {
-                if (!FstFlag)
+
+
+                client = new TcpClient();
+                var result = client.BeginConnect(serverip, port, null, null);
+
+                result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(4));
+            this.Dispatcher.Invoke(() => {
+                if (!client.Connected)
                 {
-                    stream.Write(data, 0, data.Length);
-                    stream.Flush();
-                    FstFlag = true;
-                }
-            }
-            // 确保已发送连接信息
-            if(FstFlag)
-            {
-                this.Dispatcher.Invoke(() => {
-                    status_bar.Text = "设备已连接";
-                    // 失能按钮
-                    btnOpenRTSP.IsEnabled = false;
-                    // 使能按钮
-                    btnStop.IsEnabled = true;
-                    Checker1.IsEnabled = true;
-                    btn_focus_add.IsEnabled = true;
-                    btn_focus_dec.IsEnabled = true;
-                    btn_ir_cut.IsEnabled = true;
-                    btn_reset.IsEnabled = true;
-                });
-            }
-            else
-            {
-                this.Dispatcher.Invoke(() => {
+                    // connection failure
+                    data[7] = 0x02;
                     btnOpenRTSP.IsEnabled = true;
                     btnStop.IsEnabled = false;
                     status_bar.Text = "连接失败，请检查网络配置";
-                });
-            }
-            
+                }
+                else
+                {
+                    // have connected
+                    stream = client.GetStream();
+                    
+                    data[7] = 0x01;
+                    status_bar.Text = "设备已连接";
+                    btnOpenRTSP.IsEnabled = false;
+                    btnStop.IsEnabled = true;
+
+                    TcpRecvThread = new Thread(TcpReceive);
+                    TcpRecvThread.IsBackground = true;
+                    TcpRecvThread.Start();
+
+                    if ((client != null) || (stream != null))
+                    {
+                        if (!FstFlag)
+                        {
+                            stream.Write(data, 0, data.Length);
+                            stream.Flush();
+                            FstFlag = true;
+                        }
+                    }
+                    // 确保已发送连接信息
+                    if (FstFlag)
+                    {
+                        VlcControl.SourceProvider.MediaPlayer.Play();
+                        status_bar.Text = "设备已连接";
+                        ConFlg = true;
+                        // 失能按钮
+                        btnOpenRTSP.IsEnabled = false;
+                        // 使能按钮
+                        btnStop.IsEnabled = true;
+                        Checker1.IsEnabled = true;
+                        btn_focus_add.IsEnabled = true;
+                        btn_focus_dec.IsEnabled = true;
+                        btn_ir_cut.IsEnabled = true;
+                        btn_reset.IsEnabled = true;
+                        level_1.IsEnabled = true;
+                        level_2.IsEnabled = true;
+                        level_3.IsEnabled = true;
+                        level_4.IsEnabled = true;
+                        level_5.IsEnabled = true;
+                        level_6.IsEnabled = true;
+                        level_7.IsEnabled = true;
+                        level_8.IsEnabled = true;
+                    }
+                    else
+                    {
+                        btnOpenRTSP.IsEnabled = true;
+                        btnStop.IsEnabled = false;
+                        status_bar.Text = "连接失败，请检查网络配置";
+                    }
+                }
+            });
         }
         private void TcpSent()
         {
@@ -218,15 +297,6 @@ namespace WpfVLC
         private void openrtsp_Click(object sender, RoutedEventArgs e)
         {
             status_bar.Text = "正在连接，请稍后...";
-
-            TcpConnectThread = new Thread(Connect);
-            TcpConnectThread.IsBackground = true;
-            TcpConnectThread.Start();
-            
-            TcpRecvThread = new Thread(TcpReceive);
-            TcpRecvThread.IsBackground = true;
-            TcpRecvThread.Start();
-
             string ed = "ts";
             string dest = Path.Combine(currentDirectory, $"record.{ed}");
             var options = new[]
@@ -254,22 +324,29 @@ namespace WpfVLC
             //this.VlcControl.SourceProvider.MediaPlayer.SetMedia(new Uri("rtsp://192.168.88.141:8554/"), options);
             //this.VlcControl.SourceProvider.MediaPlayer.Play(new Uri("rtsp://192.168.88.141:8554/"));
             this.VlcControl.SourceProvider.MediaPlayer.SetMedia(new Uri("udp://@192.168.88.88:1234"), options);
-            this.VlcControl.SourceProvider.MediaPlayer.Play();
+            //this.VlcControl.SourceProvider.MediaPlayer.Play();
+
+            TcpConnectThread = new Thread(Connect);
+            TcpConnectThread.IsBackground = true;
+            TcpConnectThread.Start();
+            // Connect();
         }
 
         private void stop_Click(object sender, RoutedEventArgs e)
         {
             FstFlag = false;
+            ConFlg = false;
             data = new Byte[] { 0x7d, 0x07, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02 };
             TcpSent();
 
             TcpConnectThread.Abort();
-            TcpRecvThread.Abort();
 
-            stream = null;
-            client = null;
+            // 退出tcp接收线程
+            TcpRecvThread.Abort();
             if (stream != null) stream.Close();
             if (client != null) client.Close();
+            stream = null;
+            client = null;
             status_bar.Text = "已断开连接";
 
             // combobox1.SelectedValue = 1;
@@ -282,6 +359,28 @@ namespace WpfVLC
             }).Start();
             btnOpenRTSP.IsEnabled = true;
             btnStop.IsEnabled = false;
+            Checker1.IsEnabled = false;
+            btn_focus_add.IsEnabled = false;
+            btn_focus_dec.IsEnabled = false;
+            btn_ir_cut.IsEnabled = false;
+            btn_reset.IsEnabled = false;
+            level_1.IsEnabled = false;
+            level_2.IsEnabled = false;
+            level_3.IsEnabled = false;
+            level_4.IsEnabled = false;
+            level_5.IsEnabled = false;
+            level_6.IsEnabled = false;
+            level_7.IsEnabled = false;
+            level_8.IsEnabled = false;
+
+            level_1.IsChecked = false;
+            level_2.IsChecked = false;
+            level_3.IsChecked = false;
+            level_4.IsChecked = false;
+            level_5.IsChecked = false;
+            level_6.IsChecked = false;
+            level_7.IsChecked = false;
+            level_8.IsChecked = false;
         }
         private float lastPlayTime = 0;
         private float lastPlayTimeGlobal = 0;
@@ -389,7 +488,7 @@ namespace WpfVLC
             level_2.IsChecked = false;
             level_3.IsChecked = false;
             level_4.IsChecked = false;
-            level_5.IsChecked = true;
+            level_5.IsChecked = false;
             level_6.IsChecked = false;
             level_7.IsChecked = false;
             level_8.IsChecked = false;
