@@ -598,7 +598,7 @@
                             <RadioButton Name="level_7" Content="7" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" IsEnabled="False" Foreground="#FF43A9C7" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="18" FontFamily="Corbel"/>
                             <RadioButton Name="level_8" Content="8" Checked="level_n_Checked" Margin="10,0,0,0" Height="35" Width="30" IsChecked="False" IsEnabled="False" Foreground="#FF43A9C7" HorizontalAlignment="Left" VerticalAlignment="Center" FontSize="18" FontFamily="Corbel"/>
                     </DockPanel>
-                    <TextBox Name="status_bar" TextWrapping="Wrap" Text="请点击开启以连接设备" Foreground="Black" Margin="0,0,0,-80" Width="200" Height="20" HorizontalAlignment="Center" VerticalAlignment="Bottom" IsReadOnly="True" IsEnabled="False" FontSize="16" FontFamily="Corbel" Background="#FF837474"/>
+                    <TextBox Name="status_bar" TextWrapping="Wrap" Text="请点击开启以连接设备" Foreground="Black" Margin="0,0,0,-80" Width="400" Height="20" HorizontalAlignment="Center" VerticalAlignment="Bottom" IsReadOnly="True" IsEnabled="False" FontSize="16" FontFamily="Corbel" Background="#FF837474"/>
                     <vlc:VlcControl x:Name="VlcControl" Margin="-200,0,0,0" Background="Azure">
                     </vlc:VlcControl>
                     <!--<vlc:VlcControl x:Name="VlcContro2"  Visibility="Collapsed"/>-->

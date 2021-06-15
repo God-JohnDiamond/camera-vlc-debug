@@ -129,9 +129,18 @@ namespace WpfVLC
 
         private void Connect()
         {
-            this.Dispatcher.Invoke(() => {
+            this.Dispatcher.Invoke(() => { 
                 FstFlag = false;
                 btnOpenRTSP.IsEnabled = false;
+                System.Net.IPAddress[] addressList = Dns.GetHostByName(Dns.GetHostName()).AddressList;
+                status_bar.Text = "正在连接，本机ip：" + addressList[0].ToString();
+                if (addressList[0].ToString() != "192.168.88.88")
+                {
+                    status_bar.Text = "本机ip配置错误，请设置后重试 当前ip：" + addressList[0].ToString();
+                    btnOpenRTSP.IsEnabled = true;
+                    Thread.Sleep(20);
+                    TcpConnectThread.Abort();
+                }
             });
 
 
