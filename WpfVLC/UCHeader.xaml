@@ -5,11 +5,15 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:WpfVLC"
              mc:Ignorable="d" 
-             d:DesignHeight="55" d:DesignWidth="800" Loaded="UserControl_Loaded" MouseLeftButtonDown="Window_MouseLeftButtonDown">
+             d:DesignHeight="32" d:DesignWidth="802" Loaded="UserControl_Loaded" MouseLeftButtonDown="Window_MouseLeftButtonDown">
     <Grid>
-        <DockPanel Name="Header" DockPanel.Dock="Top">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="311*"/>
+            <ColumnDefinition Width="489*"/>
+        </Grid.ColumnDefinitions>
+        <DockPanel Name="Header" Grid.ColumnSpan="2">
             <Border BorderBrush="#FF005DFF"  BorderThickness="0,0,0,1" >
-                <DockPanel Background="#FF43A9C7">
+                <DockPanel Background="#FF00B294" Margin="0,0,0,-1">
 
                     <DockPanel DockPanel.Dock="Right">
                         <StackPanel Orientation="Horizontal">
@@ -18,7 +22,7 @@
                         <Border  BorderThickness="1,0,0,0" >
                             <StackPanel>
                                 <StackPanel Margin="0,0,0,0" Orientation="Horizontal" HorizontalAlignment="Right">
-                                    <Button Name="btnMin" Content="" Width="55" Height="55" VerticalAlignment="Top" Click="BtnMin_Click">
+                                    <Button Name="btnMin" Content="" Width="55" Height="32" VerticalAlignment="Top" Click="BtnMin_Click">
                                         <Button.Template>
                                             <ControlTemplate>
                                                 <DockPanel Name="dpCon">
@@ -40,7 +44,7 @@
                                             </ControlTemplate>
                                         </Button.Template>
                                     </Button>
-                                    <Button Name="btnMax" Content="○" Width="55" Height="55" VerticalAlignment="Top" Click="BtnMax_Click">
+                                    <Button Name="btnMax" Content="○" Width="55" Height="32" VerticalAlignment="Top" Click="BtnMax_Click">
                                         <Button.Template>
                                             <ControlTemplate>
                                                 <DockPanel Name="dpCon">
@@ -62,7 +66,7 @@
                                             </ControlTemplate>
                                         </Button.Template>
                                     </Button>
-                                    <Button Name="btnClose" Content="X" Width="55" Height="55" VerticalAlignment="Top" Click="BtnClose_Click">
+                                    <Button Name="btnClose" Content="X" Width="55" Height="32" VerticalAlignment="Top" Click="BtnClose_Click">
                                         <Button.Template>
                                             <ControlTemplate>
                                                 <DockPanel Name="dpCon">
@@ -92,12 +96,11 @@
                     </DockPanel>
                     <DockPanel>
                         <StackPanel Orientation="Horizontal">
-                            <StackPanel Margin="40,20,0,0">
-                                <TextBlock Text="Camera-Debug" FontSize="16" Foreground="White"/>
-                            </StackPanel>
+                            <StackPanel Margin="40,20,0,0"/>
                         </StackPanel>
 
                     </DockPanel>
+                            <TextBlock Text="中杆调焦系统" FontSize="16" Foreground="White" Margin="60,0,0,0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                 </DockPanel>
             </Border>
         </DockPanel>
