@@ -7,8 +7,8 @@
         xmlns:vlc="clr-namespace:Vlc.DotNet.Wpf;assembly=Vlc.DotNet.Wpf"
         mc:Ignorable="d"
         WindowStyle="ThreeDBorderWindow" 
-	    Background="Transparent"  Loaded="Window_Loaded"
-        Title="中杆调焦系统"  Width="1185"  Height="800"  WindowStartupLocation="CenterScreen" Icon="/Image/logo.ico"  
+	    Background="#FF00B294"  Loaded="Window_Loaded"
+        Title="中杆调焦系统"  Width="1185"  Height="800"  WindowStartupLocation="CenterScreen" Icon="/Image/logo1.ico"  
         WindowState="Normal" AllowsTransparency="False" MinWidth="1035" MinHeight="700" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
     
     <Window.Resources>

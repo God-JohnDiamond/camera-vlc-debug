@@ -9,7 +9,7 @@
         WindowStyle="None" 
         AllowsTransparency="False"  ResizeMode="NoResize"
 	    Background="Transparent"  Loaded="Window_Loaded"
-        Title="WPF_VLC"  Width="1280"  Height="800"  WindowStartupLocation="CenterScreen" Icon="/Image/logo.ico"  >
+        Title="WPF_VLC"  Width="1280"  Height="800"  WindowStartupLocation="CenterScreen" Icon="/Image/logo1.ico"  >
     <Window.Resources>
 
         <SolidColorBrush x:Key="SliderThumb.Static.Foreground" Color="#FFE5E5E5"/>
