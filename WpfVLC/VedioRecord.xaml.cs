@@ -135,6 +135,7 @@ namespace WpfVLC
                     if (FstFlag)
                     {
                         VlcControl.SourceProvider.MediaPlayer.Play();
+                        vlc_text.Visibility = Visibility.Collapsed;
                         status_bar.Text = "设备已连接";
                         ConFlg = true;
                         // 使能按钮
@@ -186,7 +187,10 @@ namespace WpfVLC
                     slider2.IsEnabled = false;
                     // 每次发送消息时开启计时器
                     RecTimer.Interval = TIMEOUT;
-                    RecTimer.Start();
+                    if(data[7] != 0x02)
+                    {
+                        RecTimer.Start();
+                    }
                 });
             }
             else if (client != null)
@@ -483,6 +487,7 @@ namespace WpfVLC
                 //这里要开线程处理，不然会阻塞播放 
                 //Dispatcher.Invoke(() => { this.VlcControl.SourceProvider.MediaPlayer.Stop(); });
                 this.VlcControl.SourceProvider.MediaPlayer.Stop();
+                Dispatcher.Invoke(() => { vlc_text.Visibility = Visibility.Visible; });
             }).Start();
 
             this.Dispatcher.Invoke(() =>

@@ -8,7 +8,7 @@
         mc:Ignorable="d"
         WindowStyle="ThreeDBorderWindow" 
 	    Background="#FF00B294"  Loaded="Window_Loaded"
-        Title="中杆调焦系统"  Width="1185"  Height="800"  WindowStartupLocation="CenterScreen" Icon="/Image/logo1.ico"  
+        Title="中杆调焦系统"  Width="1205"  Height="790"  WindowStartupLocation="CenterScreen" Icon="/Image/logo1.ico"  
         WindowState="Normal" AllowsTransparency="False" MinWidth="1035" MinHeight="700" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
     
     <Window.Resources>
@@ -563,6 +563,7 @@
                 <DockPanel>
                     <DockPanel DockPanel.Dock="Bottom"  Margin="0,0,0,25" Background="#FFD8EAEA" MinWidth="1035" MinHeight="50">
                         <StackPanel Margin="0,0,0,0" AutomationProperties.HelpText="ir_cut"  VerticalAlignment="Center" MinWidth="1035" MinHeight="50" HorizontalAlignment="Center" Orientation="Horizontal">
+                            <TextBlock Margin="0,5,0,0" Grid.Row="3" Grid.Column="0" Text="总开关 " Foreground="#FF00B294" Height="28" FontSize="16" FontFamily="Microsoft YaHei UI" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             <CheckBox Style="{DynamicResource SliderCheckBox}" Name="btn_sys_ctl" Content="关" Click="sys_ctl" Margin="0,0,0,0"  FontSize="16" FontFamily="Microsoft YaHei UI" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
                             <CheckBox Name="check_ip" IsChecked="true" Content="是否检测ip" FontSize="16" Foreground="#FF00B294" Margin="20,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Center" BorderBrush="#FF00B294"/>
                             <!--<Button Style="{StaticResource BtnInfoStyle}" Name="btnOpenRTSP" Content="开启" Click="openrtsp_Click" Width="60" Margin="10,0,0,0" FontSize="16" FontFamily="Microsoft YaHei UI"></Button>
@@ -579,7 +580,7 @@
                     </DockPanel>
                     <vlc:VlcControl x:Name="VlcControl" Margin="0,0,0,0" Background="Azure">
                     </vlc:VlcControl>
-                        <TextBox Name="label_text" Visibility="Visible" Text="无视频流" Background="Azure" Foreground="#FF00B294" Margin="0" FontSize="72" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="300" MinHeight="100" IsHitTestVisible="False" IsEnabled="False" SelectionBrush="#010078D7" CaretBrush="#00000000" BorderBrush="#00ABADB3"/>
+                        <TextBox Name="vlc_text" Visibility="Visible" Text="无视频流 请打开总开关" Background="Azure" Foreground="#FF00B294" Margin="0" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="300" MinHeight="100" IsHitTestVisible="False" IsEnabled="False" SelectionBrush="#010078D7" CaretBrush="#00000000" BorderBrush="#00ABADB3"/>
                 </DockPanel>
             </DockPanel>
         </Border>
