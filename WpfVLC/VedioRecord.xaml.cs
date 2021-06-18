@@ -38,6 +38,8 @@ namespace WpfVLC
         static NetworkStream stream = null;
         Thread TcpRecvThread;
         Thread TcpConnectThread;
+        System.Timers.Timer RecTimer;
+        public const double TIMEOUT = 30000;
 
         // header  len    cam_id   zoom   focus   ir_cut  reset  status
         // 0x7d    0x07   0x01     0x00   0x00    0x00    0x00   0x02
@@ -52,6 +54,7 @@ namespace WpfVLC
         {
             InitializeComponent();
             // 失能按钮
+            btn_sys_ctl.Content = "关";
             btn_sys_ctl.IsChecked = false;
 
             Checker1.IsChecked = false;
@@ -60,26 +63,38 @@ namespace WpfVLC
             btn_focus_dec.IsEnabled = false;
             btn_ir_cut.IsEnabled = false;
             btn_reset.IsEnabled = false;
+            slider2.Value = 1;
             slider2.IsEnabled = false;
             slider2.AddHandler(MouseLeftButtonUpEvent, new MouseButtonEventHandler(slider2_MouseLeftButtonUp), true);
+
+            RecTimer = new System.Timers.Timer(TIMEOUT);//实例化Timer类，设置间隔时间为30000毫秒 30s；
+            RecTimer.Elapsed += new System.Timers.ElapsedEventHandler(Execute);//到达时间的时候执行事件；
+            RecTimer.AutoReset = true;//设置是执行一次（false）还是一直执行(true)；
         }
 
         private void Connect()
         {
             this.Dispatcher.Invoke(() => { 
                 FstFlag = false;
-                
-                System.Net.IPAddress[] addressList = Dns.GetHostByName(Dns.GetHostName()).AddressList;
-                status_bar.Text = "正在连接，本机ip：" + addressList[0].ToString();
-                if (addressList[0].ToString() != "192.168.88.88")
+                btn_sys_ctl.Content = "关";
+                btn_sys_ctl.IsEnabled = false;
+                check_ip.IsEnabled = false;
+                status_bar.Text = "正在连接，请稍后...";
+                if ((bool)check_ip.IsChecked)
                 {
-                    status_bar.Text = "本机ip配置错误，请设置后重试 当前ip：" + addressList[0].ToString();
-                    btn_sys_ctl.IsChecked = false;
-                    Thread.Sleep(20);
-                    if (TcpConnectThread != null) TcpConnectThread.Abort();
+                    System.Net.IPAddress[] addressList = Dns.GetHostByName(Dns.GetHostName()).AddressList;
+                    status_bar.Text = "正在连接，本机ip：" + addressList[0].ToString();
+                    if (addressList[0].ToString() != "192.168.88.88")
+                    {
+                        status_bar.Text = "ip配置错误，请将本机ip设置成 192.168.88.88";
+                        btn_sys_ctl.Content = "关";
+                        btn_sys_ctl.IsChecked = false;
+                        check_ip.IsEnabled = true;
+                        Thread.Sleep(20);
+                        if (TcpConnectThread != null) TcpConnectThread.Abort();
+                    }
                 }
             });
-
 
             client = new TcpClient();
             var result = client.BeginConnect(serverip, port, null, null);
@@ -90,8 +105,10 @@ namespace WpfVLC
                 {
                     // connection failure
                     data[7] = 0x02;
+                    btn_sys_ctl.Content = "关";
                     btn_sys_ctl.IsChecked = false;
-                    status_bar.Text = "连接失败，请检查网络配置";
+                    check_ip.IsEnabled = true;
+                    status_bar.Text = "连接失败，请检查网络设备速率是否为10M全双工 设备是否开启";
                 }
                 else
                 {
@@ -121,6 +138,7 @@ namespace WpfVLC
                         status_bar.Text = "设备已连接";
                         ConFlg = true;
                         // 使能按钮
+                        btn_sys_ctl.Content = "开";
                         btn_sys_ctl.IsChecked = true;
                         Checker1.IsEnabled = true;
                         btn_focus_add.IsEnabled = true;
@@ -131,10 +149,14 @@ namespace WpfVLC
                     }
                     else
                     {
+                        btn_sys_ctl.Content = "关";
                         btn_sys_ctl.IsChecked = false;
-                        status_bar.Text = "连接失败，请检查网络配置";
+                        status_bar.Text = "连接失败，请检查网络设备速率是否为10M全双工 设备是否开启";
                     }
                 }
+                // 连接操作之后 不管成功连接与否 均使能此二开关 以便再次操作
+                check_ip.IsEnabled = true;
+                btn_sys_ctl.IsEnabled = true;
             });
         }
         private void TcpSent()
@@ -162,6 +184,9 @@ namespace WpfVLC
                     btn_ir_cut.IsEnabled = false;
                     btn_reset.IsEnabled = false;
                     slider2.IsEnabled = false;
+                    // 每次发送消息时开启计时器
+                    RecTimer.Interval = TIMEOUT;
+                    RecTimer.Start();
                 });
             }
             else if (client != null)
@@ -193,13 +218,15 @@ namespace WpfVLC
                         {
                             this.Dispatcher.Invoke(() =>
                             {
-                                //超时未操作 断开连接
+                                // 断开连接
+                                btn_sys_ctl.Content = "关";
                                 btn_sys_ctl.IsChecked = false;
                                 Checker1.IsEnabled = false;
                                 btn_focus_add.IsEnabled = false;
                                 btn_focus_dec.IsEnabled = false;
                                 btn_ir_cut.IsEnabled = false;
                                 btn_reset.IsEnabled = false;
+                                slider2.Value = 1;
                                 slider2.IsEnabled = false;
                             });
                         }
@@ -232,6 +259,10 @@ namespace WpfVLC
                                 status_bar.Text = "已完成操作";
                             });
                         }
+                        // 清空接收缓存
+                        rec_data = new Byte[] { 0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00};
+                        // 重置关闭连接定时器
+                        RecTimer.Stop();
                     }
                 }
                 if (!client.Connected)
@@ -253,12 +284,14 @@ namespace WpfVLC
                     this.Dispatcher.Invoke(() =>
                     {
                         //超时未操作 断开连接
+                        btn_sys_ctl.Content = "关";
                         btn_sys_ctl.IsChecked = false;
                         Checker1.IsEnabled = false;
                         btn_focus_add.IsEnabled = false;
                         btn_focus_dec.IsEnabled = false;
                         btn_ir_cut.IsEnabled = false;
                         btn_reset.IsEnabled = false;
+                        slider2.Value = 1;
                         slider2.IsEnabled = false;
                     });
                     // 退出tcp接收线程
@@ -303,48 +336,11 @@ namespace WpfVLC
             Console.WriteLine(e.ToString());
         }
 
-        /*private void openrtsp_Click(object sender, RoutedEventArgs e)
-        {
-            status_bar.Text = "正在连接，请稍后...";
-            string ed = "ts";
-            string dest = Path.Combine(currentDirectory, $"record.{ed}");
-            var options = new[]
-            {
-                    ":sout=#duplicate{dst=display,dst=std{access=file,mux="+ed+",dst=" +dest+"}}",
-                    //":live-caching = 200",//本地缓存毫秒数
-                    ":network-caching = 100",
-                    //":sout=#file{dst=" + destination + "}",
-                    //":sout=#duplicate{dst=display,dst=rtp{sdp=rtsp://:5544/cam}}", 想本地端口5544播放rtsp
-                    ":sout-keep"// 持续开启串流输出 (默认关闭)
-
-                   *//* //":mmdevice-volume=0",
-                    //":audiofile-channels=0",
-                    :live-caching = 300",//本地缓存毫秒数  display-audio :sout=#display
-                    ":sout=#transcode{vcodec=h264,fps=25,venc=x264{preset=ultrafast,profile=baseline,tune=zerolatency},scale=1,acodec=mpga,ab=128,channels=2,samplerate=44100},",
-                    ":duplicate{dst=display,dst=std{access=file,mux="+ed+",dst=" +dest+"}}",
-                    ":sout=#duplicate{dst=display,dst=std{access=file,mux="+ed+",dst="+dest+"}}",
-                    //":sout=#display",
-                    ":sout-keep",
-                    ":sout-all",
-                    ":sout-audio",
-                    ":sout-audio-sync",*//*
-            };
-            this.VlcControl.SourceProvider.MediaPlayer.ResetMedia();
-            //this.VlcControl.SourceProvider.MediaPlayer.SetMedia(new Uri("rtsp://192.168.88.141:8554/"), options);
-            //this.VlcControl.SourceProvider.MediaPlayer.Play(new Uri("rtsp://192.168.88.141:8554/"));
-            this.VlcControl.SourceProvider.MediaPlayer.SetMedia(new Uri("udp://@192.168.88.88:1234"), options);
-            //this.VlcControl.SourceProvider.MediaPlayer.Play();
-
-            TcpConnectThread = new Thread(Connect);
-            TcpConnectThread.IsBackground = true;
-            TcpConnectThread.Start();
-            // Connect();
-        }*/
-
         private void sys_ctl(object sender, RoutedEventArgs e)
         {
             if((bool)btn_sys_ctl.IsChecked)
             {
+                btn_sys_ctl.Content = "开";
                 SysStart();
             }
             else
@@ -352,6 +348,17 @@ namespace WpfVLC
                 SysStop(0);
             }
         }
+        
+
+        public void Execute(object source, System.Timers.ElapsedEventArgs e)
+        {
+            SysStop(1);
+            this.Dispatcher.Invoke(() =>
+            {
+                status_bar.Text = "设备掉线";
+            });
+        }
+
         public void SysStart()
         {
             ThreadStopFlg = false;
@@ -376,15 +383,15 @@ namespace WpfVLC
             var options = new[]
             {
                     ":sout=#duplicate{dst=display,dst=std{access=file,mux="+ed+",dst=" +dest+"}}",
-                    //":live-caching = 200",//本地缓存毫秒数
-                    ":network-caching = 100",
+                    ":live-caching = 200",//本地缓存毫秒数
+                    ":network-caching = 50",
                     //":sout=#file{dst=" + destination + "}",
                     //":sout=#duplicate{dst=display,dst=rtp{sdp=rtsp://:5544/cam}}", 想本地端口5544播放rtsp
                     ":sout-keep"// 持续开启串流输出 (默认关闭)
 
                    /* //":mmdevice-volume=0",
                     //":audiofile-channels=0",
-                    :live-caching = 300",//本地缓存毫秒数  display-audio :sout=#display
+                    ":live-caching = 300",//本地缓存毫秒数  display-audio :sout=#display
                     ":sout=#transcode{vcodec=h264,fps=25,venc=x264{preset=ultrafast,profile=baseline,tune=zerolatency},scale=1,acodec=mpga,ab=128,channels=2,samplerate=44100},",
                     ":duplicate{dst=display,dst=std{access=file,mux="+ed+",dst=" +dest+"}}",
                     ":sout=#duplicate{dst=display,dst=std{access=file,mux="+ed+",dst="+dest+"}}",
@@ -470,9 +477,6 @@ namespace WpfVLC
 
             stream = null;
             client = null;
-            status_bar.Text = "已断开连接";
-
-            // combobox1.SelectedValue = 1;
 
             new Task(() =>
             {
@@ -481,14 +485,20 @@ namespace WpfVLC
                 this.VlcControl.SourceProvider.MediaPlayer.Stop();
             }).Start();
 
-            btn_sys_ctl.IsChecked = false;
-            Checker1.IsChecked = false;
-            Checker1.IsEnabled = false;
-            btn_focus_add.IsEnabled = false;
-            btn_focus_dec.IsEnabled = false;
-            btn_ir_cut.IsEnabled = false;
-            btn_reset.IsEnabled = false;
-            slider2.IsEnabled = false;
+            this.Dispatcher.Invoke(() =>
+            {
+                status_bar.Text = "已断开连接";                
+                btn_sys_ctl.Content = "关";
+                btn_sys_ctl.IsChecked = false;
+                Checker1.IsChecked = false;
+                Checker1.IsEnabled = false;
+                btn_focus_add.IsEnabled = false;
+                btn_focus_dec.IsEnabled = false;
+                btn_ir_cut.IsEnabled = false;
+                btn_reset.IsEnabled = false;
+                slider2.Value = 1;
+                slider2.IsEnabled = false;
+            });
         }
 
         private float lastPlayTime = 0;
@@ -521,7 +531,7 @@ namespace WpfVLC
             }
             else
             {
-                status_bar.Text = "设备未连接，请先点击开启连接设备";
+                status_bar.Text = "设备未连接，请先关连接设备";
                 return;
             }
             TcpSent();
@@ -537,7 +547,7 @@ namespace WpfVLC
             }
             else
             {
-                status_bar.Text = "设备未连接，请先点击开启连接设备";
+                status_bar.Text = "设备未连接，请先关连接设备";
                 return;
             }
             TcpSent();
@@ -561,7 +571,7 @@ namespace WpfVLC
                     btn_ir_cut.Content = "ir_cut开";
                     btn_ir_cut.IsChecked = false;
                     data[5] = 0x01;
-                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    status_bar.Text = "设备未连接，请先关连接设备";
                     return;
                 }
             }
@@ -580,7 +590,7 @@ namespace WpfVLC
                     btn_ir_cut.Content = "ir_cut关";
                     btn_ir_cut.IsChecked = true;
                     data[5] = 0x02;
-                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    status_bar.Text = "设备未连接，请先关连接设备";
                     return;
                 }
             }
@@ -601,7 +611,7 @@ namespace WpfVLC
             }
             else
             {
-                status_bar.Text = "设备未连接，请先点击开启连接设备";
+                status_bar.Text = "设备未连接，请先关连接设备";
                 return;
             }
             TcpSent();
@@ -619,7 +629,7 @@ namespace WpfVLC
                 }
                 else
                 {
-                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    status_bar.Text = "设备未连接，请先关连接设备";
                     return;
                 }
             }
@@ -633,7 +643,7 @@ namespace WpfVLC
                 }
                 else
                 {
-                    status_bar.Text = "设备未连接，请先点击开启连接设备";
+                    status_bar.Text = "设备未连接，请先关连接设备";
                     return;
                 }
             }
@@ -656,7 +666,7 @@ namespace WpfVLC
             }
             else
             {
-                status_bar.Text = "设备未连接，请先点击开启连接设备";
+                status_bar.Text = "设备未连接，请先关连接设备";
                 return;
             }
             TcpSent();

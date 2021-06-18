@@ -563,23 +563,26 @@
                 <DockPanel>
                     <DockPanel DockPanel.Dock="Bottom"  Margin="0,0,0,25" Background="#FFD8EAEA" MinWidth="1035" MinHeight="50">
                         <StackPanel Margin="0,0,0,0" AutomationProperties.HelpText="ir_cut"  VerticalAlignment="Center" MinWidth="1035" MinHeight="50" HorizontalAlignment="Center" Orientation="Horizontal">
-                            <CheckBox  Style="{DynamicResource SliderCheckBox}" Name="btn_sys_ctl" Content="点击开启" Click="sys_ctl" Width="105" Margin="20,0,0,0"  FontSize="16" FontFamily="Corbel" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-                            <!--<Button Style="{StaticResource BtnInfoStyle}" Name="btnOpenRTSP" Content="开启" Click="openrtsp_Click" Width="60" Margin="10,0,0,0" FontSize="16" FontFamily="Corbel"></Button>
-                            <Button Style="{StaticResource BtnInfoStyle}" Name="btnStop" Content="停止" IsEnabled="False" Click="stop_Click" Width="60" Margin="10,0,0,0" FontSize="16" FontFamily="Corbel" />-->
-                            <CheckBox Style="{DynamicResource SliderCheckBox}" Name="Checker1" Margin="20,0,0,0" Width="80" IsEnabled="False" Content="相机1" FontSize="16" FontFamily="Corbel" Click="Camera_Checked" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
-                            <Button  Style="{StaticResource BtnInfoStyle}" Name="btn_focus_add" Content="微调+" IsEnabled="False" Click="focus_Add" Width="50" Margin="20,0,0,0" FontSize="16" FontFamily="Corbel"/>
-                            <Button  Style="{StaticResource BtnInfoStyle}" Name="btn_focus_dec" Content="微调-" IsEnabled="False" Click="focus_Dec" Width="50" Margin="10,0,0,0" FontSize="16" FontFamily="Corbel"/>
-                            <CheckBox  Style="{DynamicResource SliderCheckBox}" Name="btn_ir_cut" Content="ir_cut开" IsEnabled="False" Click="ir_cut" Width="90" Margin="20,0,0,0"  FontSize="16" FontFamily="Corbel" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
-                            <Button Style="{StaticResource BtnInfoStyle}" Name="btn_reset" Content="重置" Click="reset_cam" Width="50" Margin="20,0,0,0" FontSize="16" FontFamily="Corbel"/>
-                            <TextBlock Margin="20,5,0,0" Grid.Row="3" Grid.Column="0" Text="变焦等级：" Foreground="#FF00B294" Height="28" FontSize="16" FontFamily="Corbel" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <CheckBox Style="{DynamicResource SliderCheckBox}" Name="btn_sys_ctl" Content="关" Click="sys_ctl" Margin="0,0,0,0"  FontSize="16" FontFamily="Microsoft YaHei UI" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                            <CheckBox Name="check_ip" IsChecked="true" Content="是否检测ip" FontSize="16" Foreground="#FF00B294" Margin="20,0,0,0" VerticalAlignment="Center" HorizontalAlignment="Center" BorderBrush="#FF00B294"/>
+                            <!--<Button Style="{StaticResource BtnInfoStyle}" Name="btnOpenRTSP" Content="开启" Click="openrtsp_Click" Width="60" Margin="10,0,0,0" FontSize="16" FontFamily="Microsoft YaHei UI"></Button>
+                            <Button Style="{StaticResource BtnInfoStyle}" Name="btnStop" Content="停止" IsEnabled="False" Click="stop_Click" Width="60" Margin="10,0,0,0" FontSize="16" FontFamily="Microsoft YaHei UI" />-->
+                            <CheckBox Style="{DynamicResource SliderCheckBox}" Name="Checker1" Margin="20,0,0,0" Width="80" IsEnabled="False" Content="相机1" FontSize="16" FontFamily="Microsoft YaHei UI" Click="Camera_Checked" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
+                            <Button  Style="{StaticResource BtnInfoStyle}" Name="btn_focus_add" Content="微调+" IsEnabled="False" Click="focus_Add" Width="50" Margin="20,0,0,0" FontSize="16" FontFamily="Microsoft YaHei UI"/>
+                            <Button  Style="{StaticResource BtnInfoStyle}" Name="btn_focus_dec" Content="微调-" IsEnabled="False" Click="focus_Dec" Width="50" Margin="10,0,0,0" FontSize="16" FontFamily="Microsoft YaHei UI"/>
+                            <CheckBox  Style="{DynamicResource SliderCheckBox}" Name="btn_ir_cut" Content="ir_cut开" IsEnabled="False" Click="ir_cut" Width="90" Margin="20,0,0,0"  FontSize="16" FontFamily="Microsoft YaHei UI" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+                            <Button Style="{StaticResource BtnInfoStyle}" Name="btn_reset" Content="重置" Click="reset_cam" IsEnabled="False" Width="50" Margin="20,0,0,0" FontSize="16" FontFamily="Microsoft YaHei UI"/>
+                            <TextBlock Margin="20,5,0,0" Grid.Row="3" Grid.Column="0" Text="变焦等级：" Foreground="#FF00B294" Height="28" FontSize="16" FontFamily="Microsoft YaHei UI" HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             <TextBox Text="{Binding ElementName=slider2, Path=Value, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" TextAlignment="Right" Background="{x:Null}" BorderBrush="{x:Null}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF00B294" IsEnabled="False" Focusable="False" Padding="0,0,0,10" FontSize="16" Margin="0,5,0,0"/>
                             <Slider Name="slider2"  MinWidth="300" DockPanel.Dock="Right" IsSnapToTickEnabled="True" TickFrequency="1" MouseLeftButtonUp="slider2_MouseLeftButtonUp" Margin="10" Minimum="1" Maximum="8" Value="1" Style="{DynamicResource SliderStyle1}" VerticalAlignment="Center" Width="350"/>
                         </StackPanel>
                     </DockPanel>
-                    <vlc:VlcControl x:Name="VlcControl" Margin="0,0,0,0" Background="Azure"/>
+                    <vlc:VlcControl x:Name="VlcControl" Margin="0,0,0,0" Background="Azure">
+                    </vlc:VlcControl>
+                        <TextBox Name="label_text" Visibility="Visible" Text="无视频流" Background="Azure" Foreground="#FF00B294" Margin="0" FontSize="72" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="300" MinHeight="100" IsHitTestVisible="False" IsEnabled="False" SelectionBrush="#010078D7" CaretBrush="#00000000" BorderBrush="#00ABADB3"/>
                 </DockPanel>
             </DockPanel>
         </Border>
-        <TextBox Name="status_bar" TextWrapping="Wrap" Text="请点击开启以连接设备" Background="Azure" Foreground="#FF00B294" Margin="0,0,0,0" IsReadOnly="True" IsEnabled="False" FontSize="18" MinWidth="100" MinHeight="25" HorizontalAlignment="Left" VerticalAlignment="Bottom" SpellCheck.IsEnabled="True" Focusable="False" VerticalContentAlignment="Bottom" BorderBrush="Azure"/>
+        <TextBox Name="status_bar" TextWrapping="Wrap" Text="请点击开关以连接设备" Background="Azure" Foreground="#FF00B294" Margin="0,0,0,0" IsReadOnly="True" IsEnabled="False" FontSize="18" MinWidth="100" MinHeight="25" HorizontalAlignment="Left" VerticalAlignment="Bottom" SpellCheck.IsEnabled="True" Focusable="False" VerticalContentAlignment="Bottom" BorderBrush="Azure"/>
     </Grid>
 </Window>

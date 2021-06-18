@@ -84,7 +84,7 @@
     <ManifestKeyFile>WpfVLC_TemporaryKey.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
-    <GenerateManifests>true</GenerateManifests>
+    <GenerateManifests>false</GenerateManifests>
   </PropertyGroup>
   <PropertyGroup>
     <TargetZone>LocalIntranet</TargetZone>
@@ -133,26 +133,6 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="VedioAdvanced.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="WindowCamera.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="WindowRTSP.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
-    <Page Include="UCHeader.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-      <SubType>Designer</SubType>
-    </Page>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -160,22 +140,6 @@
     <Compile Include="Control\KButton.cs" />
     <Compile Include="VedioRecord.xaml.cs">
       <DependentUpon>VedioRecord.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="VedioAdvanced.xaml.cs">
-      <DependentUpon>VedioAdvanced.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="WindowCamera.xaml.cs">
-      <DependentUpon>WindowCamera.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="WindowRTSP.xaml.cs">
-      <DependentUpon>WindowRTSP.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="UCHeader.xaml.cs">
-      <DependentUpon>UCHeader.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-      <SubType>Code</SubType>
     </Compile>
   </ItemGroup>
   <ItemGroup>
@@ -201,7 +165,6 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Include="WpfVLC_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
