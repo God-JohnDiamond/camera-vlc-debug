@@ -87,6 +87,7 @@ namespace WpfVLC
                     if (addressList[0].ToString() != "192.168.88.88")
                     {
                         status_bar.Text = "ip配置错误，请将本机ip设置成 192.168.88.88";
+                        btn_sys_ctl.IsEnabled = true;
                         btn_sys_ctl.Content = "关";
                         btn_sys_ctl.IsChecked = false;
                         check_ip.IsEnabled = true;
@@ -99,12 +100,14 @@ namespace WpfVLC
             client = new TcpClient();
             var result = client.BeginConnect(serverip, port, null, null);
 
+            // tcp连接 time out 4s
             result.AsyncWaitHandle.WaitOne(TimeSpan.FromSeconds(4));
             this.Dispatcher.Invoke(() => {
                 if (!client.Connected)
                 {
                     // connection failure
                     data[7] = 0x02;
+                    btn_sys_ctl.IsEnabled = true;
                     btn_sys_ctl.Content = "关";
                     btn_sys_ctl.IsChecked = false;
                     check_ip.IsEnabled = true;
@@ -139,6 +142,7 @@ namespace WpfVLC
                         status_bar.Text = "设备已连接";
                         ConFlg = true;
                         // 使能按钮
+                        btn_sys_ctl.IsEnabled = true;
                         btn_sys_ctl.Content = "开";
                         btn_sys_ctl.IsChecked = true;
                         Checker1.IsEnabled = true;
@@ -150,8 +154,10 @@ namespace WpfVLC
                     }
                     else
                     {
+                        btn_sys_ctl.IsEnabled = true;
                         btn_sys_ctl.Content = "关";
                         btn_sys_ctl.IsChecked = false;
+                        check_ip.IsEnabled = true;
                         status_bar.Text = "连接失败，请检查网络设备速率是否为10M全双工 设备是否开启";
                     }
                 }
@@ -366,32 +372,28 @@ namespace WpfVLC
         public void SysStart()
         {
             ThreadStopFlg = false;
-            /*uint ping_cnt_1 = 0;
-            Ping ping_1 = new Ping();
-            PingReply pingReply1 = ping_1.Send(serverip);
-            if (pingReply1.Status == IPStatus.Success)
+            
+            if (!File.Exists("record.ts"))
             {
-                // Console.WriteLine("当前在线，已ping通！");
-                status_bar.Text = "设备在线，正在连接，请稍后...";
+                //缓存文件不存在 无操作
             }
             else
             {
-                btn_sys_ctl.IsChecked = false;
-                SysStop(1);
-                status_bar.Text = "设备不在线，请先打开设备";
-                return;
-                // Console.WriteLine("不在线，ping不通！");
-            }*/
+                //执行删除操作
+                File.Delete("record.ts");
+            }
+
             string ed = "ts";
             string dest = Path.Combine(currentDirectory, $"record.{ed}");
             var options = new[]
             {
                     ":sout=#duplicate{dst=display,dst=std{access=file,mux="+ed+",dst=" +dest+"}}",
-                    ":live-caching = 200",//本地缓存毫秒数
-                    ":network-caching = 50",
+                    ":live-caching = 100",//本地缓存毫秒数
+                    ":network-caching = 100",
                     //":sout=#file{dst=" + destination + "}",
                     //":sout=#duplicate{dst=display,dst=rtp{sdp=rtsp://:5544/cam}}", 想本地端口5544播放rtsp
-                    ":sout-keep"// 持续开启串流输出 (默认关闭)
+                    ":sout-keep",// 持续开启串流输出 (默认关闭)
+                    "–udp-caching=50"
 
                    /* //":mmdevice-volume=0",
                     //":audiofile-channels=0",
