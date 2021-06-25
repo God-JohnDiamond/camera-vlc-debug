@@ -388,8 +388,8 @@ namespace WpfVLC
             var options = new[]
             {
                     ":sout=#duplicate{dst=display,dst=std{access=file,mux="+ed+",dst=" +dest+"}}",
-                    ":live-caching = 100",//本地缓存毫秒数
-                    ":network-caching = 100",
+                    ":live-caching = 200",//本地缓存毫秒数
+                    ":network-caching = 200",
                     //":sout=#file{dst=" + destination + "}",
                     //":sout=#duplicate{dst=display,dst=rtp{sdp=rtsp://:5544/cam}}", 想本地端口5544播放rtsp
                     ":sout-keep",// 持续开启串流输出 (默认关闭)

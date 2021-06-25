@@ -9,8 +9,8 @@
         WindowStyle="ThreeDBorderWindow" 
 	    Background="#FF00B294"  Loaded="Window_Loaded"
         Title="中杆调焦系统"  Width="1205"  Height="790"  WindowStartupLocation="CenterScreen" Icon="/Image/logo1.ico"  
-        WindowState="Normal" AllowsTransparency="False" MinWidth="1035" MinHeight="700" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
-    
+        WindowState="Normal" AllowsTransparency="False" MinWidth="1150" MinHeight="750" HorizontalContentAlignment="Center" VerticalContentAlignment="Center">
+
     <Window.Resources>
 
         <SolidColorBrush x:Key="SliderThumb.Static.Foreground" Color="#FFE5E5E5"/>
@@ -254,9 +254,9 @@
             </ControlTemplate.Triggers>
         </ControlTemplate>
         <Style x:Key="SliderStyle1" TargetType="{x:Type Slider}">
-            <Setter Property="Stylus.IsPressAndHoldEnabled" Value="false"/>
+            <Setter Property="Stylus.IsPressAndHoldEnabled" Value="True"/>
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="#FF00FF74"/>
             <Setter Property="Foreground" Value="{StaticResource SliderThumb.Static.Foreground}"/>
             <Setter Property="Template" Value="{StaticResource SliderHorizontal}"/>
             <Style.Triggers>
@@ -328,7 +328,7 @@
                                 <Setter Property="Foreground" Value="#FFBCCCCD"/>
                                 <Setter Property="Background" Value="#FFBCCCCD"/>
                             </Trigger>
-                            
+
                             <Trigger Property="IsChecked" Value="True">
                                 <!--<Setter TargetName="ForegroundPanel" Property="Background" Value="{DynamicResource Accent}" />-->
                                 <Setter TargetName="ForegroundPanel" Property="Background" Value="#FF00C949" />
@@ -574,13 +574,25 @@
                             <CheckBox  Style="{DynamicResource SliderCheckBox}" Name="btn_ir_cut" Content="ir_cut开" IsEnabled="False" Click="ir_cut" Width="90" Margin="20,0,0,0"  FontSize="16" FontFamily="Microsoft YaHei UI" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
                             <Button Style="{StaticResource BtnInfoStyle}" Name="btn_reset" Content="重置" Click="reset_cam" IsEnabled="False" Width="50" Margin="20,0,0,0" FontSize="16" FontFamily="Microsoft YaHei UI"/>
                             <TextBlock Margin="20,5,0,0" Grid.Row="3" Grid.Column="0" Text="变焦等级：" Foreground="#FF00B294" Height="28" FontSize="16" FontFamily="Microsoft YaHei UI" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            <TextBox Text="{Binding ElementName=slider2, Path=Value, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" TextAlignment="Right" Background="{x:Null}" BorderBrush="{x:Null}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF00B294" IsEnabled="False" Focusable="False" Padding="0,0,0,10" FontSize="16" Margin="0,5,0,0"/>
-                            <Slider Name="slider2"  MinWidth="300" DockPanel.Dock="Right" IsSnapToTickEnabled="True" TickFrequency="1" MouseLeftButtonUp="slider2_MouseLeftButtonUp" Margin="10" Minimum="1" Maximum="8" Value="1" Style="{DynamicResource SliderStyle1}" VerticalAlignment="Center" Width="350"/>
+                            <!--<TextBox Text="{Binding ElementName=slider2, Path=Value, UpdateSourceTrigger=PropertyChanged}" DockPanel.Dock="Right" TextAlignment="Right" Background="{x:Null}" BorderBrush="{x:Null}" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#FF00B294" IsEnabled="False" Focusable="False" Padding="0,0,0,10" FontSize="16" Margin="0,5,0,0"/>-->
+                            <Grid>
+                                <Slider Grid.Row="0" Name="slider2" IsEnabled="True" MinWidth="300" DockPanel.Dock="Right" IsSnapToTickEnabled="True" TickFrequency="1" Style="{DynamicResource SliderStyle1}" MouseLeftButtonUp="slider2_MouseLeftButtonUp" Margin="10" Minimum="1" Maximum="8" Value="1" VerticalAlignment="Center" Width="350" SmallChange="1" BorderBrush="#FF00FFA2"/>
+                                <Label Grid.Row="1" Content="1" Foreground="#FF00B294" Margin="  5,35,0,0"/>
+                                <Label Grid.Row="1" Content="2" Foreground="#FF00B294" Margin=" 55,35,0,0"/>
+                                <Label Grid.Row="1" Content="3" Foreground="#FF00B294" Margin="105,35,0,0"/>
+                                <Label Grid.Row="1" Content="4" Foreground="#FF00B294" Margin="155,35,0,0"/>
+                                <Label Grid.Row="1" Content="5" Foreground="#FF00B294" Margin="205,35,0,0"/>
+                                <Label Grid.Row="1" Content="6" Foreground="#FF00B294" Margin="255,35,0,0"/>
+                                <Label Grid.Row="1" Content="7" Foreground="#FF00B294" Margin="305,35,0,0"/>
+                                <Label Grid.Row="1" Content="8" Foreground="#FF00B294" Margin="355,35,0,0"/>
+                            </Grid>
                         </StackPanel>
                     </DockPanel>
-                    <vlc:VlcControl x:Name="VlcControl" Margin="0,0,0,0" Background="Azure">
-                    </vlc:VlcControl>
+                    <DockPanel DockPanel.Dock="Bottom"  Margin="0,0,0,0" Background="Azure" MinWidth="1035" MinHeight="50"  HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <vlc:VlcControl x:Name="VlcControl" Margin="0,0,0,0" Background="Azure">
+                        </vlc:VlcControl>
                         <TextBox Name="vlc_text" Visibility="Visible" Text="无视频流 请打开总开关" Background="Azure" Foreground="#FF00B294" Margin="0" FontSize="50" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="300" MinHeight="100" IsHitTestVisible="False" IsEnabled="False" SelectionBrush="#010078D7" CaretBrush="#00000000" BorderBrush="#00ABADB3"/>
+                    </DockPanel>
                 </DockPanel>
             </DockPanel>
         </Border>
