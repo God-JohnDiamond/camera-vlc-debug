@@ -218,8 +218,20 @@ namespace WpfVLC
                     if (FstFlag)
                     {
                         Byte[] rec_data = new Byte[8];
-                        stream.Read(rec_data, 0, rec_data.Length);
-                        if ((rec_data[0] != 0x7d) && (rec_data[1] != 0x07))
+                        try
+                        {
+                            stream.Read(rec_data, 0, rec_data.Length);
+                        }
+                        catch (IOException ex)
+                        {
+                            SysStop(1);
+                            this.Dispatcher.Invoke(() =>
+                            {
+                                status_bar.Text = "设备掉线";
+                            });
+                            break;
+                        }
+                    if ((rec_data[0] != 0x7d) && (rec_data[1] != 0x07))
                         {
                             //System.Windows.MessageBox.Show("传输错误，请重试");
                             data[7] = 0x02;
