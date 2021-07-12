@@ -43,7 +43,7 @@ namespace WpfVLC
 
         // header  len    cam_id   zoom   focus   ir_cut  reset  status
         // 0x7d    0x07   0x01     0x00   0x00    0x00    0x00   0x02
-        private Byte[] data = new Byte[] { 0x7d, 0x07, 0x01, 0x00, 0x00, 0x00, 0x00, 0x02};
+        private Byte[] data = new Byte[] { 0x7d, 0x07, 0x01, 0x00, 0x00, 0x01, 0x00, 0x02};
 
         private bool FstFlag = false;
         private bool ConFlg = false;
@@ -58,10 +58,12 @@ namespace WpfVLC
             btn_sys_ctl.IsChecked = false;
 
             Checker1.IsChecked = false;
+            Checker1.Content = "相机1";
             Checker1.IsEnabled = false;
             btn_focus_add.IsEnabled = false;
             btn_focus_dec.IsEnabled = false;
             btn_ir_cut.IsEnabled = false;
+            btn_ir_cut.Content = "ircut开";
             btn_reset.IsEnabled = false;
             slider2.Value = 1;
             slider2.IsEnabled = false;
@@ -86,7 +88,7 @@ namespace WpfVLC
                     status_bar.Text = "正在连接，本机ip：" + addressList[0].ToString();
                     if (addressList[0].ToString() != "192.168.88.88")
                     {
-                        status_bar.Text = "ip配置错误，请将本机ip设置成 192.168.88.88";
+                        status_bar.Text = Dns.GetHostName() + "ip配置错误，请将本机ip设置成 192.168.88.88";
                         btn_sys_ctl.IsEnabled = true;
                         btn_sys_ctl.Content = "关";
                         btn_sys_ctl.IsChecked = false;
@@ -149,6 +151,7 @@ namespace WpfVLC
                         btn_focus_add.IsEnabled = true;
                         btn_focus_dec.IsEnabled = true;
                         btn_ir_cut.IsEnabled = true;
+                        btn_ir_cut.Content = "ircut开";
                         btn_reset.IsEnabled = true;
                         slider2.IsEnabled = true;
                     }
@@ -172,14 +175,38 @@ namespace WpfVLC
             {
                 if (!FstFlag)
                 {
-                    stream.Write(data, 0, data.Length);
-                    stream.Flush();
+                    try
+                    {
+                        stream.Write(data, 0, data.Length);
+                        stream.Flush();
+                    }
+                    catch (IOException ex)
+                    {
+                        SysStop(1);
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            status_bar.Text = "设备掉线";
+                        });
+                    }
                 }
                 if (FstFlag && (data[7] == 0x03))
                 {
                     stream = client.GetStream();
-                    stream.Write(data, 0, data.Length);
-                    stream.Flush();
+
+                    try
+                    {
+                        stream.Write(data, 0, data.Length);
+                        stream.Flush();
+                    }
+                    catch (IOException ex)
+                    {
+                        SysStop(1);
+                        this.Dispatcher.Invoke(() =>
+                        {
+                            status_bar.Text = "设备掉线";
+                        });
+                    }
+
                     data[7] = 0x01;
                 }
                 this.Dispatcher.Invoke(() =>
@@ -510,6 +537,7 @@ namespace WpfVLC
                 btn_sys_ctl.Content = "关";
                 btn_sys_ctl.IsChecked = false;
                 Checker1.IsChecked = false;
+                Checker1.Content = "相机1";
                 Checker1.IsEnabled = false;
                 btn_focus_add.IsEnabled = false;
                 btn_focus_dec.IsEnabled = false;
@@ -577,25 +605,6 @@ namespace WpfVLC
 
             if ((bool)btn_ir_cut.IsChecked)
             {
-                // 关操作
-                btn_ir_cut.Content = "ir_cut关";
-                data[5] = 0x02;
-
-                if (client != null)
-                {
-                    status_bar.Text = "正在执行关闭ir_cut";
-                }
-                else
-                {
-                    btn_ir_cut.Content = "ir_cut开";
-                    btn_ir_cut.IsChecked = false;
-                    data[5] = 0x01;
-                    status_bar.Text = "设备未连接，请先关连接设备";
-                    return;
-                }
-            }
-            else
-            {
                 // 开操作
                 btn_ir_cut.Content = "ir_cut开";
                 data[5] = 0x01;
@@ -607,13 +616,31 @@ namespace WpfVLC
                 else
                 {
                     btn_ir_cut.Content = "ir_cut关";
-                    btn_ir_cut.IsChecked = true;
+                    btn_ir_cut.IsChecked = false;
                     data[5] = 0x02;
                     status_bar.Text = "设备未连接，请先关连接设备";
                     return;
                 }
             }
+            else
+            {
+                // 关操作
+                btn_ir_cut.Content = "ir_cut关";
+                data[5] = 0x02;
 
+                if (client != null)
+                {
+                    status_bar.Text = "正在执行关闭ir_cut";
+                }
+                else
+                {
+                    btn_ir_cut.Content = "ir_cut开";
+                    btn_ir_cut.IsChecked = true;
+                    data[5] = 0x01;
+                    status_bar.Text = "设备未连接，请先关连接设备";
+                    return;
+                }
+            }
 
             TcpSent();
         }
@@ -669,7 +696,9 @@ namespace WpfVLC
             // 切换相机 zoom focus ir_cut reset 归零
             data[3] = 0;
             data[4] = 0;
-            data[5] = 0;
+            btn_ir_cut.Content = "ircut开";
+            btn_ir_cut.IsChecked = true;
+            data[5] = 1;
             data[6] = 0;
             TcpSent();
         }
